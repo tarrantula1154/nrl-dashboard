@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NRL Results Tracker — Model Performance</title>
+<style>
+:root {
+    --bg: #0a0e1a;
+    --card: #111827;
+    --card-alt: #0f1525;
+    --border: #1e2740;
+    --text: #e0e4ec;
+    --muted: #8b95a8;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --purple: #a78bfa;
+    --blue: #60a5fa;
+    --cyan: #22d3ee;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:12px; max-width:1100px; margin:0 auto; }
+
+.header { text-align:center; padding:20px 0 12px; }
+.header h1 { color:var(--gold); font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+.header .sub { color:var(--muted); font-size:12px; margin-top:4px; }
+.nav-links { margin-top:8px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.nav-btn { display:inline-block; padding:5px 16px; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none; transition:all 0.2s; }
+.nav-btn.dash { background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); }
+.nav-btn.multi { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+
+/* ── Tier Cards ── */
+.tier-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin:16px 0; }
+.tier-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+.tier-card.strong { border-color:rgba(16,185,129,0.4); }
+.tier-card.lean { border-color:rgba(96,165,250,0.4); }
+.tier-card.marginal { border-color:rgba(245,158,11,0.3); }
+.tier-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.tier-card.strong .tier-label { color:var(--green); }
+.tier-card.lean .tier-label { color:var(--blue); }
+.tier-card.marginal .tier-label { color:var(--gold); }
+.tier-record { font-size:28px; font-weight:800; color:var(--text); }
+.tier-roi { font-size:16px; font-weight:700; margin-top:4px; }
+.tier-pl { font-size:12px; color:var(--muted); margin-top:2px; }
+
+/* ── Summary bar ── */
+.summary-bar { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin:16px 0; }
+.sum-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; }
+.sum-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+.sum-val { font-size:20px; font-weight:700; margin-top:4px; }
+
+/* ── Insight box ── */
+.insight-box { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:16px 20px; margin:16px 0; }
+.insight-title { color:var(--green); font-size:13px; font-weight:700; margin-bottom:6px; }
+.insight-text { color:var(--text); font-size:13px; line-height:1.6; }
+
+/* ── Section ── */
+.section { background:var(--card); border:1px solid var(--border); border-radius:10px; margin:16px 0; overflow:hidden; }
+.section-header { padding:14px 16px; border-bottom:1px solid var(--border); }
+.section-title { color:var(--text); font-size:14px; font-weight:700; }
+.section-sub { color:var(--muted); font-size:11px; margin-top:2px; }
+
+/* ── Tables ── */
+table { width:100%; border-collapse:collapse; font-size:12px; }
+thead { background:rgba(15,21,37,0.8); }
+th { padding:8px 10px; text-align:left; color:var(--muted); font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); }
+td { padding:7px 10px; border-bottom:1px solid rgba(30,39,64,0.5); }
+tr:hover { background:rgba(245,158,11,0.03); }
+.win { color:var(--green); font-weight:700; }
+.loss { color:var(--red); font-weight:700; }
+.conf-strong { color:var(--green); font-weight:700; }
+.conf-lean { color:var(--blue); font-weight:600; }
+.conf-marginal { color:var(--gold); font-weight:600; }
+.note-skip { color:var(--muted); font-size:10px; font-style:italic; }
+.pl-pos { color:var(--green); }
+.pl-neg { color:var(--red); }
+
+/* ── Round cards ── */
+.round-card { background:var(--card-alt); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin:8px 0; }
+.round-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.round-num { font-size:15px; font-weight:700; color:var(--gold); }
+.round-dates { font-size:11px; color:var(--muted); }
+.round-stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+.round-stat { text-align:center; }
+.round-stat-label { font-size:9px; color:var(--muted); text-transform:uppercase; }
+.round-stat-val { font-size:14px; font-weight:700; margin-top:2px; }
+
+/* ── Tabs ── */
+.tabs { display:flex; gap:2px; padding:8px 12px; background:rgba(15,21,37,0.5); overflow-x:auto; }
+.tab { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; white-space:nowrap; transition:all 0.2s; }
+.tab:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+.tab.active { background:rgba(245,158,11,0.15); color:var(--gold); }
+.tab-content { display:none; padding:12px; }
+.tab-content.active { display:block; }
+.count-badge { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:10px; font-size:10px; margin-left:5px; }
+
+/* ── Try scorer summary ── */
+.ts-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin:12px 0; }
+.ts-card { background:var(--card-alt); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; }
+.ts-label { font-size:11px; color:var(--muted); font-weight:600; }
+.ts-record { font-size:18px; font-weight:700; margin-top:4px; }
+.ts-pl { font-size:12px; margin-top:2px; }
+
+/* ── Footer ── */
+.footer { text-align:center; color:var(--muted); font-size:10px; padding:20px 0; line-height:1.8; }
+.footer a { color:var(--gold); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>NRL Model Results Tracker</h1>
+    <div class="sub">Tracking model performance from Round 12 onwards | $1 unit flat stakes</div>
+    <div class="sub">Rounds tracked: R12 (1 round)</div>
+    <div class="nav-links">
+        <a href="NRL_Dashboard.html" class="nav-btn dash">&#8592; Match Dashboard</a>
+        <a href="NRL_Multi_Builder.html" class="nav-btn multi">Multi Builder</a>
+    </div>
+</div>
+<div class="tier-grid">
+    <div class="tier-card strong">
+        <div class="tier-label">STRONG</div>
+        <div class="tier-record">5W-1L</div>
+        <div class="tier-roi" style="color:var(--green)">+47.5% ROI</div>
+        <div class="tier-pl">$+2.85 on $6 staked</div>
+    </div>
+    <div class="tier-card lean">
+        <div class="tier-label">LEAN</div>
+        <div class="tier-record">1W-1L</div>
+        <div class="tier-roi" style="color:var(--green)">+8.0% ROI</div>
+        <div class="tier-pl">$+0.16 on $2 staked</div>
+    </div>
+    <div class="tier-card marginal">
+        <div class="tier-label">MARGINAL</div>
+        <div class="tier-record">3W-4L</div>
+        <div class="tier-roi" style="color:var(--red)">-27.3% ROI</div>
+        <div class="tier-pl">$-1.91 on $7 staked</div>
+    </div></div><div class="summary-bar">
+    <div class="sum-card">
+        <div class="sum-label">Total Bets</div>
+        <div class="sum-val" style="color:var(--text)">15</div>
+    </div>
+    <div class="sum-card">
+        <div class="sum-label">Record</div>
+        <div class="sum-val" style="color:var(--text)">9W-6L</div>
+    </div>
+    <div class="sum-card">
+        <div class="sum-label">Profit/Loss</div>
+        <div class="sum-val" style="color:var(--green)">$+1.10</div>
+    </div>
+    <div class="sum-card">
+        <div class="sum-label">Overall ROI</div>
+        <div class="sum-val" style="color:var(--green)">+7.3%</div>
+    </div></div>
+<div class="insight-box">
+    <div class="insight-title">Key Finding</div>
+    <div class="insight-text">
+        <strong>STRONG</strong> confidence picks are the standout — <strong>5W-1L</strong> for
+        <strong style="color:var(--green)">+47.5% ROI</strong>
+        ($+2.85 profit on $6 staked).
+        Filtering to STRONG only would have been highly profitable.
+        MARGINAL picks with SKIP flags should be avoided — those were 3W-4L (-27.3% ROI).
+    </div>
+</div>
+
+<div class="section">
+    <div class="tabs" id="mainTabs">
+        <div class="tab active" onclick="showTab('overview')">Overview</div>
+        <div class="tab" onclick="showTab('structured')">All Structured Bets<span class="count-badge">15</span></div>
+        <div class="tab" onclick="showTab('tryscorers')">Try Scorers<span class="count-badge">25</span></div>
+        <div class="tab" onclick="showTab('rounds')">By Round</div>
+    </div>
+
+    <div class="tab-content active" id="tab-overview">
+<div style="padding:4px 0 8px;"><span style="font-size:13px;font-weight:700;">Performance by Market</span></div><table><thead><tr><th>Market</th><th>Record</th><th>P/L</th><th>ROI</th></tr></thead><tbody><tr><td><strong>H2H</strong></td><td>3W-2L</td><td class="pl-neg">$-0.35</td><td class="pl-neg">-7.0%</td></tr><tr><td><strong>Line</strong></td><td>2W-3L</td><td class="pl-neg">$-1.15</td><td class="pl-neg">-23.0%</td></tr><tr><td><strong>Totals</strong></td><td>4W-1L</td><td class="pl-pos">$+2.60</td><td class="pl-pos">+52.0%</td></tr></tbody></table><div style="padding:16px 0 8px;"><span style="font-size:13px;font-weight:700;">Performance by Confidence</span></div><table><thead><tr><th>Confidence</th><th>Record</th><th>Win %</th><th>P/L</th><th>ROI</th></tr></thead><tbody><tr><td class="conf-strong">STRONG</td><td>5W-1L</td><td>83%</td><td class="pl-pos">$+2.85</td><td class="pl-pos">+47.5%</td></tr><tr><td class="conf-lean">LEAN</td><td>1W-1L</td><td>50%</td><td class="pl-pos">$+0.16</td><td class="pl-pos">+8.0%</td></tr><tr><td class="conf-marginal">MARGINAL</td><td>3W-4L</td><td>43%</td><td class="pl-neg">$-1.91</td><td class="pl-neg">-27.3%</td></tr></tbody></table><div style="padding:16px 0 8px;"><span style="font-size:13px;font-weight:700;">SKIP Flag Analysis</span></div><table><thead><tr><th>Category</th><th>Record</th><th>P/L</th><th>ROI</th></tr></thead><tbody><tr><td style="color:var(--muted);">SKIP flagged bets</td><td>1W-3L</td><td class="pl-neg">$-2.07</td><td class="pl-neg">-51.7%</td></tr><tr><td style="color:var(--green);">Active bets (no SKIP)</td><td>8W-3L</td><td class="pl-pos">$+3.17</td><td class="pl-pos">+28.8%</td></tr></tbody></table></div>
+    <div class="tab-content" id="tab-structured">
+<table><thead><tr><th>Rd</th><th>Market</th><th>Match</th><th>Pick</th><th>Conf</th><th>Odds</th><th>Result</th><th>P/L</th><th>Note</th></tr></thead><tbody><tr><td>R12</td><td>H2H</td><td>Bulldogs vs Storm</td><td>Melbourne Storm</td><td class="conf-lean">LEAN</td><td>$2.30</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td><td></td></tr><tr><td>R12</td><td>H2H</td><td>Cowboys vs Rabbitohs</td><td>South Sydney Rabbitohs</td><td class="conf-marginal">MARGINAL</td><td>$2.22</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td><td></td></tr><tr><td>R12</td><td>H2H</td><td>Dragons vs Warriors</td><td>New Zealand Warriors</td><td class="conf-strong">STRONG</td><td>$1.23</td><td class="win">WIN</td><td class="pl-pos">$+0.23</td><td></td></tr><tr><td>R12</td><td>H2H</td><td>Raiders vs Dolphins</td><td>Dolphins</td><td class="conf-lean">LEAN</td><td>$2.16</td><td class="win">WIN</td><td class="pl-pos">$+1.16</td><td></td></tr><tr><td>R12</td><td>H2H</td><td>Sea Eagles vs Titans</td><td>Manly Sea Eagles</td><td class="conf-marginal">MARGINAL</td><td>$1.26</td><td class="win">WIN</td><td class="pl-pos">$+0.26</td><td></td></tr><tr><td>R12</td><td>Line</td><td>Bulldogs vs Storm</td><td>Melbourne Storm +1.5</td><td class="conf-marginal">MARGINAL</td><td>$1.93</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td><td><span class="note-skip">SKIP (SPLIT)</span></td></tr><tr><td>R12</td><td>Line</td><td>Cowboys vs Rabbitohs</td><td>Rabbitohs +1.5</td><td class="conf-marginal">MARGINAL</td><td>$1.90</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td><td><span class="note-skip">SKIP (SPLIT)</span></td></tr><tr><td>R12</td><td>Line</td><td>Dragons vs Warriors</td><td>NZ Warriors -6.5</td><td class="conf-strong">STRONG</td><td>$1.92</td><td class="win">WIN</td><td class="pl-pos">$+0.92</td><td></td></tr><tr><td>R12</td><td>Line</td><td>Raiders vs Dolphins</td><td>Dolphins +1.5</td><td class="conf-marginal">MARGINAL</td><td>$1.93</td><td class="win">WIN</td><td class="pl-pos">$+0.93</td><td><span class="note-skip">SKIP (CAUTION)</span></td></tr><tr><td>R12</td><td>Line</td><td>Sea Eagles vs Titans</td><td>Sea Eagles -6.5</td><td class="conf-marginal">MARGINAL</td><td>$2.02</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td><td><span class="note-skip">SKIP (CAUTION)</span></td></tr><tr><td>R12</td><td>Totals</td><td>Bulldogs vs Storm</td><td>UNDER 48.5</td><td class="conf-strong">STRONG</td><td>$1.84</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td><td></td></tr><tr><td>R12</td><td>Totals</td><td>Cowboys vs Rabbitohs</td><td>UNDER 53.5</td><td class="conf-strong">STRONG</td><td>$1.90</td><td class="win">WIN</td><td class="pl-pos">$+0.90</td><td></td></tr><tr><td>R12</td><td>Totals</td><td>Dragons vs Warriors</td><td>UNDER 51.5</td><td class="conf-strong">STRONG</td><td>$1.90</td><td class="win">WIN</td><td class="pl-pos">$+0.90</td><td></td></tr><tr><td>R12</td><td>Totals</td><td>Raiders vs Dolphins</td><td>OVER 48.5</td><td class="conf-marginal">MARGINAL</td><td>$1.90</td><td class="win">WIN</td><td class="pl-pos">$+0.90</td><td></td></tr><tr><td>R12</td><td>Totals</td><td>Sea Eagles vs Titans</td><td>UNDER 51.5</td><td class="conf-strong">STRONG</td><td>$1.90</td><td class="win">WIN</td><td class="pl-pos">$+0.90</td><td></td></tr></tbody></table></div>
+    <div class="tab-content" id="tab-tryscorers">
+<div class="ts-grid">
+    <div class="ts-card">
+        <div class="ts-label">Anytime (ATS)</div>
+        <div class="ts-record">8W-17L</div>
+        <div class="ts-pl pl-neg">$-4.09 (-16.4%)</div>
+    </div>
+    <div class="ts-card">
+        <div class="ts-label">2+ Tries</div>
+        <div class="ts-record">2W-13L</div>
+        <div class="ts-pl pl-neg">$-9.50 (-63.3%)</div>
+    </div>
+    <div class="ts-card">
+        <div class="ts-label">First Try (FTS)</div>
+        <div class="ts-record">1W-14L</div>
+        <div class="ts-pl pl-neg">$-7.50 (-50.0%)</div>
+    </div></div><div style="padding:8px 0 4px;"><span style="font-size:13px;font-weight:700;">Anytime Try Scorer Detail</span></div><table><thead><tr><th>Rd</th><th>Match</th><th>Player</th><th>Team</th><th>Comp</th><th>Odds</th><th>Result</th><th>P/L</th></tr></thead><tbody><tr><td>R12</td><td>Raiders vs Dolphins</td><td>Jamayne Isaako</td><td>Dolphins</td><td>66.7</td><td>$1.84</td><td class="win">WIN</td><td class="pl-pos">$+0.84</td></tr><tr><td>R12</td><td>Raiders vs Dolphins</td><td>Kaeo Weekes</td><td>Raiders</td><td>62.0</td><td>$1.92</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Raiders vs Dolphins</td><td>Savelio Tamale</td><td>Raiders</td><td>46.8</td><td>$1.99</td><td class="win">WIN</td><td class="pl-pos">$+0.99</td></tr><tr><td>R12</td><td>Raiders vs Dolphins</td><td>Xavier Savage</td><td>Raiders</td><td>42.9</td><td>$1.77</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Raiders vs Dolphins</td><td>Corey Horsburgh</td><td>Raiders</td><td>28.4</td><td>$8.75</td><td class="win">WIN</td><td class="pl-pos">$+7.75</td></tr><tr><td>R12</td><td>Bulldogs vs Storm</td><td>Nick Meaney</td><td>Storm</td><td>42.0</td><td>$3.10</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Bulldogs vs Storm</td><td>Lachlan Galvin</td><td>Bulldogs</td><td>40.5</td><td>$2.50</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Bulldogs vs Storm</td><td>Jacob Preston</td><td>Bulldogs</td><td>38.1</td><td>$2.45</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Bulldogs vs Storm</td><td>Jacob Kiraz</td><td>Bulldogs</td><td>35.5</td><td>$1.77</td><td class="win">WIN</td><td class="pl-pos">$+0.77</td></tr><tr><td>R12</td><td>Bulldogs vs Storm</td><td>Will Warbrick</td><td>Storm</td><td>31.1</td><td>$1.94</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Dragons vs Warriors</td><td>Leka Halasima</td><td>Warriors</td><td>59.7</td><td>$2.18</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Dragons vs Warriors</td><td>Alofiana Khan-Pereira</td><td>Warriors</td><td>47.1</td><td>$1.52</td><td class="win">WIN</td><td class="pl-pos">$+0.52</td></tr><tr><td>R12</td><td>Dragons vs Warriors</td><td>Dallin Watene-Zelezniak</td><td>Warriors</td><td>43.8</td><td>$1.48</td><td class="win">WIN</td><td class="pl-pos">$+0.48</td></tr><tr><td>R12</td><td>Dragons vs Warriors</td><td>Adam Pompey</td><td>Warriors</td><td>33.3</td><td>$2.55</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Dragons vs Warriors</td><td>Ali Leiataua</td><td>Warriors</td><td>30.0</td><td>$2.35</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Sea Eagles vs Titans</td><td>Reuben Garrick</td><td>Sea Eagles</td><td>60.2</td><td>$1.88</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Sea Eagles vs Titans</td><td>Jayden Campbell</td><td>Titans</td><td>50.4</td><td>$3.35</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Sea Eagles vs Titans</td><td>Jamal Fogarty</td><td>Sea Eagles</td><td>43.9</td><td>$3.90</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Sea Eagles vs Titans</td><td>Jason Saab</td><td>Sea Eagles</td><td>41.6</td><td>$1.47</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Sea Eagles vs Titans</td><td>Phillip Sami</td><td>Titans</td><td>41.0</td><td>$2.10</td><td class="win">WIN</td><td class="pl-pos">$+1.10</td></tr><tr><td>R12</td><td>Cowboys vs Rabbitohs</td><td>Jaxon Purdue</td><td>Cowboys</td><td>70.1</td><td>$2.03</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Cowboys vs Rabbitohs</td><td>Scott Drinkwater</td><td>Cowboys</td><td>58.4</td><td>$1.78</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Cowboys vs Rabbitohs</td><td>Alex Johnston</td><td>Rabbitohs</td><td>56.8</td><td>$1.46</td><td class="win">WIN</td><td class="pl-pos">$+0.46</td></tr><tr><td>R12</td><td>Cowboys vs Rabbitohs</td><td>Tallis Duncan</td><td>Rabbitohs</td><td>47.2</td><td>$2.60</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr><tr><td>R12</td><td>Cowboys vs Rabbitohs</td><td>Heilum Luki</td><td>Cowboys</td><td>34.4</td><td>$2.55</td><td class="loss">LOSS</td><td class="pl-neg">$-1.00</td></tr></tbody></table></div>
+    <div class="tab-content" id="tab-rounds">
+
+    <div class="round-card">
+        <div class="round-header">
+            <span class="round-num">Round 12</span>
+            <span class="round-dates">15-17 May 2026 | 5 matches</span>
+        </div>
+        <div class="round-stats">
+            <div class="round-stat">
+                <div class="round-stat-label">All Picks</div>
+                <div class="round-stat-val">9W-6L</div>
+            </div>
+            <div class="round-stat">
+                <div class="round-stat-label">All ROI</div>
+                <div class="round-stat-val pl-pos">+7.3%</div>
+            </div>
+            <div class="round-stat">
+                <div class="round-stat-label">STRONG Only</div>
+                <div class="round-stat-val">5W-1L</div>
+            </div>
+            <div class="round-stat">
+                <div class="round-stat-label">STRONG ROI</div>
+                <div class="round-stat-val pl-pos">+47.5%</div>
+            </div>
+        </div>
+    </div></div></div>
+<div class="footer">
+    NRL Model Results Tracker | Tracking from Round 12 onwards | Generated 29 May 2026 11:43
+    <br>All bets at $1 flat stake. ROI = P/L / Staked * 100. Results verified against official NRL scores.
+    <br><a href="NRL_Dashboard.html">Match Dashboard</a> | <a href="NRL_Multi_Builder.html">Multi Builder</a>
+</div>
+
+<script>
+function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
