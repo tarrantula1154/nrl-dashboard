@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NRL Round 14 — Betting Analysis</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e1a;color:#c8ccd4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;line-height:1.4;padding:8px}
+.header{text-align:center;padding:10px 0;border-bottom:1px solid #1a2035}
+.header h1{color:#e0e4ec;font-size:18px;font-weight:600}
+.header .sub{color:#6b7280;font-size:12px}
+.tabs{display:flex;gap:4px;padding:10px 0;flex-wrap:wrap;justify-content:center}
+.tab-btn{background:#141928;border:1px solid #1e2740;color:#8b92a0;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .2s}
+.tab-btn:hover{background:#1a2240;color:#c8ccd4}
+.tab-btn.active{background:#1e3a5f;color:#60a5fa;border-color:#2563eb}
+.mp{display:none}
+.mp.active{display:block}
+.match-header{text-align:center;padding:8px 0}
+.match-header h2{color:#e0e4ec;font-size:16px}
+.match-meta{color:#6b7280;font-size:11px}
+.grid-2x2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.bubble{background:#111827;border:1px solid #1e2740;border-radius:8px;padding:10px;overflow:auto}
+.bubble-title{color:#60a5fa;font-size:13px;font-weight:600;margin-bottom:6px;border-bottom:1px solid #1a2035;padding-bottom:4px}
+.rec{background:linear-gradient(135deg,#064e3b,#065f46);color:#6ee7b7;padding:6px 8px;border-radius:5px;font-size:11px;font-weight:600;margin-bottom:6px}
+.rec-sub{color:#9ca3af;font-size:10px;margin-bottom:6px;padding-left:4px;font-style:italic}
+.sub-title{color:#818cf8;font-size:11px;font-weight:600;margin:6px 0 3px}
+.odds-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.odds-chip{background:#1e293b;padding:3px 6px;border-radius:4px;font-size:11px;white-space:nowrap}
+.odds-chip b{color:#fbbf24}
+.stats-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:4px}
+.stats-tbl th{background:#1a2035;color:#818cf8;padding:3px 5px;text-align:left;font-weight:500}
+.stats-tbl td{padding:3px 5px;border-bottom:1px solid #141928}
+.mini-tbl{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:4px}
+.mini-tbl th{background:#1a2035;color:#9ca3af;padding:2px 4px;text-align:left;font-weight:500}
+.mini-tbl td{padding:2px 4px;border-bottom:1px solid #0f1320}
+.stat-line{font-size:11px;padding:2px 0;color:#9ca3af}
+.stat-line b{color:#e0e4ec}
+.roi-pos{color:#6ee7b7 !important}
+.roi-neg{color:#f87171 !important}
+.win-home td{color:#6ee7b7}
+.win-away td{color:#f87171}
+.over td:last-child{color:#6ee7b7}
+.under td:last-child{color:#f87171}
+.try-scorers{background:#111827;border:1px solid #1e2740;border-radius:8px;padding:10px;margin-top:8px}
+.ts-full-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
+.ts-full-tbl thead th{background:#1a2035;color:#818cf8;padding:4px 5px;text-align:left;font-weight:500;font-size:10px;white-space:nowrap;position:sticky;top:0}
+.ts-full-tbl tbody td{padding:3px 5px;border-bottom:1px solid #0f1320;white-space:nowrap}
+.ts-full-tbl tbody tr:hover{background:#1a2240}
+.ts-player{color:#e0e4ec;font-weight:500}
+.ts-zone{color:#6b7280;font-size:10px}
+.ts-prev{color:#6b7280;font-size:9px}
+.ts-up{color:#6ee7b7}
+.ts-down{color:#f87171}
+.ts-flat{color:#6b7280}
+.ts-hot{color:#6ee7b7;font-weight:600;font-size:10px}
+.ts-warm{color:#fbbf24;font-size:10px}
+.ts-cold{color:#f87171;font-size:10px}
+.ts-ahead{color:#6ee7b7;font-size:10px;font-weight:600}
+.ts-behind{color:#f87171;font-size:10px;font-weight:600}
+.ts-ontrack{color:#6b7280;font-size:10px}
+.ts-comp-high{color:#6ee7b7;font-weight:700;font-size:12px}
+.ts-comp-med{color:#fbbf24;font-weight:600}
+.ts-comp-low{color:#6b7280}
+.ts-boost{color:#818cf8;font-size:9px}
+.ts-prob{color:#60a5fa;font-weight:600}
+.ts-price{color:#fbbf24;font-size:11px}
+.ts-value-list{font-size:11px;padding:4px 0 8px;line-height:1.6}
+.ts-tabs{display:flex;gap:4px;margin-bottom:8px}
+.ts-tab{background:#141928;border:1px solid #1e2740;color:#8b92a0;padding:5px 12px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;transition:all .2s}
+.ts-tab:hover{background:#1a2240;color:#c8ccd4}
+.ts-tab.active{background:#1e3a5f;color:#60a5fa;border-color:#2563eb}
+.ts-panel{display:none}
+.ts-panel.active{display:block}
+.ts-team-home{background:#064e3b;color:#6ee7b7;padding:1px 4px;border-radius:3px;font-size:9px;font-weight:600}
+.ts-team-away{background:#1e3a5f;color:#60a5fa;padding:1px 4px;border-radius:3px;font-size:9px;font-weight:600}
+.ts-stars{color:#fbbf24;font-size:11px;letter-spacing:-1px}
+.ts-edge{background:#064e3b;color:#6ee7b7;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700}
+.ts-edge-low{color:#6b7280;font-size:9px}
+.ts-odds-summary{margin-top:8px;padding-top:6px;border-top:1px solid #1a2035}
+.bets-summary{background:linear-gradient(135deg,#0c1929,#111d33);border:1px solid #1e3a5f;border-radius:8px;padding:10px;margin:8px 0}
+.sum-title{color:#60a5fa;font-size:13px;font-weight:700;margin-bottom:6px;letter-spacing:0.5px}
+.sum-grid{display:flex;flex-wrap:wrap;gap:6px}
+.sum-bet{display:flex;align-items:center;gap:6px;background:#141928;border:1px solid #1e2740;border-radius:6px;padding:5px 10px;font-size:12px}
+.sum-icon{font-size:14px}
+.sum-market{color:#818cf8;font-weight:600;min-width:65px}
+.sum-pick{color:#e0e4ec}
+.sum-conf{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:auto}
+.sum-strong .sum-conf{background:#064e3b;color:#6ee7b7}
+.sum-lean .sum-conf{background:#1e3a5f;color:#60a5fa}
+.sum-marginal .sum-conf{background:#44403c;color:#d6d3d1}
+.sum-avoid .sum-conf{background:#7f1d1d;color:#fca5a5}
+.sum-avoid .sum-pick{color:#9ca3af;font-style:italic}
+.sum-title-ts{margin-top:8px;padding-top:6px;border-top:1px solid #1e2740}
+.sum-ts{border-color:#1e3a5f}
+.sum-ts .sum-market{color:#60a5fa}
+.sum-ts .sum-pick b{color:#fbbf24}
+.sum-ts-ats{border-color:#1e3a5f}
+.sum-ts-ats .sum-market{color:#60a5fa}
+.sum-ts-ats .sum-pick b{color:#fbbf24}
+.sum-ts-multi{border-color:#4c1d95}
+.sum-ts-multi .sum-market{color:#a78bfa}
+.sum-ts-multi .sum-pick b{color:#fbbf24}
+.sum-ts-fts{border-color:#92400e}
+.sum-ts-fts .sum-market{color:#fbbf24}
+.sum-ts-fts .sum-pick b{color:#fbbf24}
+.sum-team{color:#6b7280;font-size:10px}
+.ts-edge-sm{background:#064e3b;color:#6ee7b7;padding:0 4px;border-radius:2px;font-size:9px;font-weight:700}
+@media(max-width:900px){.sum-grid{flex-direction:column}}
+.refresh-btn{background:#1e3a5f;color:#60a5fa;border:1px solid #2563eb;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:10px}
+.refresh-btn:hover{background:#2563eb;color:#fff}
+.refresh-btn:disabled{opacity:0.5;cursor:not-allowed}
+#refresh-status{font-size:10px;color:#6b7280;margin-left:6px}
+.tot-indicators{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.tot-ind{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600}
+.tot-over{background:#064e3b;color:#6ee7b7}
+.tot-under{background:#7f1d1d;color:#fca5a5}
+.tot-neutral{background:#374151;color:#9ca3af}
+.ts-picks-panel{background:linear-gradient(135deg,#0c1929,#111d33);border:1px solid #1e3a5f;border-radius:8px;padding:10px;margin-top:6px}
+.gb-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gb-col{background:#111827;border-radius:8px;padding:8px}
+.gb-col-title{color:#60a5fa;font-size:12px;font-weight:700;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #1a2035}
+.gb-col-hdr{display:flex;gap:4px;font-size:9px;color:#6b7280;padding:2px 0;margin-bottom:4px;font-weight:600}
+.gb-row{display:flex;gap:4px;align-items:center;padding:4px 2px;border-bottom:1px solid #0f1320;font-size:11px}
+.gb-row:hover{background:#1a2240}
+.gb-rank{color:#818cf8;font-weight:700;min-width:16px;text-align:center}
+.gb-label{background:#1e3a5f;color:#60a5fa;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;min-width:24px;text-align:center}
+.gb-multi .gb-label{background:#4c1d95;color:#a78bfa}
+.gb-fts .gb-label{background:#92400e;color:#fbbf24}
+.gb-player{color:#e0e4ec;font-weight:500;flex:1.5}
+.gb-team{color:#9ca3af;font-size:10px;flex:0.8}
+.gb-price{color:#fbbf24;font-weight:600;min-width:40px;text-align:right}
+.gb-prob{color:#60a5fa;font-weight:600;min-width:32px;text-align:right}
+.gb-score{color:#6ee7b7;font-weight:700;min-width:28px;text-align:right}
+.gb-edge{min-width:36px;text-align:right}
+.gb-val{color:#22c55e;font-size:10px;font-weight:600}
+.gb-none{color:#6b7280;font-size:11px;padding:8px;font-style:italic}
+.sum-multi-only .sum-conf{background:#4c1d95;color:#a78bfa}
+.sum-multi-only .sum-pick{color:#a78bfa}
+/* ── Match Multi Suggestions ── */
+.match-multis{margin-top:8px}
+.match-multis-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0;user-select:none}
+.match-multis-hdr:hover .mm-title{color:#fbbf24}
+.mm-title{font-size:12px;font-weight:700;color:#a78bfa;transition:color 0.2s}
+.mm-toggle{font-size:10px;color:#6b7280;transition:transform 0.2s}
+.match-multis.collapsed .mm-toggle{transform:rotate(-90deg)}
+.match-multis.collapsed .mm-body{display:none}
+.mm-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:4px}
+.mm-card{background:#0f1525;border:1px solid #1e2740;border-radius:8px;overflow:hidden}
+.mm-card.mm-safe{border-color:rgba(16,185,129,0.3)}
+.mm-card.mm-value{border-color:rgba(96,165,250,0.3)}
+.mm-card.mm-long{border-color:rgba(245,158,11,0.3)}
+.mm-card-hdr{padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+.mm-card.mm-safe .mm-card-hdr{background:rgba(16,185,129,0.08)}
+.mm-card.mm-value .mm-card-hdr{background:rgba(96,165,250,0.08)}
+.mm-card.mm-long .mm-card-hdr{background:rgba(245,158,11,0.08)}
+.mm-card-name{font-size:11px;font-weight:700}
+.mm-card.mm-safe .mm-card-name{color:#10b981}
+.mm-card.mm-value .mm-card-name{color:#60a5fa}
+.mm-card.mm-long .mm-card-name{color:#f59e0b}
+.mm-desc{padding:2px 10px 4px;font-size:9px;color:#6b7280;font-style:italic}
+.mm-card-odds{font-size:13px;font-weight:800;color:#fbbf24}
+.mm-card-legs{font-size:10px;color:#6b7280}
+.mm-card-body{padding:6px 10px}
+.mm-leg{padding:4px 0;border-bottom:1px solid rgba(30,39,64,0.5);font-size:11px}
+.mm-leg:last-child{border-bottom:none}
+.mm-leg-pick{color:#e0e4ec;font-weight:600}
+.mm-leg-price{color:#fbbf24;font-weight:700;margin-left:4px}
+.mm-leg-detail{color:#6b7280;font-size:10px;margin-top:1px}
+.mm-leg-ev{font-size:10px;margin-top:1px}
+.mm-combined{color:#a78bfa;font-size:11px;font-weight:600;padding:4px 10px 6px;text-align:right;border-top:1px solid #1e2740}
+.mm-combined b{color:#fbbf24;font-size:12px}
+@media(max-width:900px){.grid-2x2{grid-template-columns:1fr}.ts-grid{grid-template-columns:1fr}.gb-cols{grid-template-columns:1fr}.mm-body{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>NRL Round 14 — Betting Analysis Dashboard</h1>
+  <div class="sub">Generated 04 Jun 2026 02:00 | 1 bookies via BetSniper + Neds | <span style="color:#22c55e">Odds updated: 04 Jun 2026 02:00 (H2H: NRL API — run refresh_odds.py for full odds)</span>
+    <a href="NRL_Multi_Builder.html" style="display:inline-block;margin-left:12px;padding:4px 14px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;">Multi Builder</a>
+    <a href="NRL_Results.html" style="display:inline-block;margin-left:8px;padding:4px 14px;background:rgba(168,85,247,0.15);color:#c4b5fd;border:1px solid rgba(168,85,247,0.4);border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;">Results Tracker</a>
+    <button class="refresh-btn" id="refresh-btn" onclick="refreshOdds()">&#x21bb; Refresh Odds</button>
+    <span id="refresh-status"></span>
+  </div>
+</div>
+<div class="tabs"><button class="tab-btn active" onclick="showMatch(0)">SEA v RAB<br><span style="font-size:9px;color:#6b7280">Thu 4 Jun 7:50pm</span></button><button class="tab-btn" onclick="showMatch(1)">STO v KNI<br><span style="font-size:9px;color:#6b7280">Fri 5 Jun 6:00pm</span></button><button class="tab-btn" onclick="showMatch(2)">RAI v ROO<br><span style="font-size:9px;color:#6b7280">Fri 5 Jun 8:00pm</span></button><button class="tab-btn" onclick="showMatch(3)">COW v DOL<br><span style="font-size:9px;color:#6b7280">Sat 6 Jun 5:30pm</span></button><button class="tab-btn" onclick="showMatch(4)">BRO v TIT<br><span style="font-size:9px;color:#6b7280">Sat 6 Jun 7:35pm</span></button><button class="tab-btn" onclick="showMatch(5)">TIG v PAN<br><span style="font-size:9px;color:#6b7280">Sun 7 Jun 2:00pm</span></button><button class="tab-btn" onclick="showMatch(6)">SHA v DRA<br><span style="font-size:9px;color:#6b7280">Sun 7 Jun 4:05pm</span></button><button class="tab-btn" onclick="showMatch(7)">BUL v EEL<br><span style="font-size:9px;color:#6b7280">Mon 8 Jun 4:05pm</span></button></div>
+
+    <div class="mp active" id="match-0">
+      <div class="match-header">
+        <h2>Manly Sea Eagles vs South Sydney Rabbitohs</h2>
+        <div class="match-meta">Thu 4 Jun 7:50pm | 4 Pines Park</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-strong"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Manly Sea Eagles @ $1.56</span><span class="sum-conf">STRONG</span></div><div class="sum-bet sum-marginal"><span class="sum-icon">&#9660;</span><span class="sum-market">Total</span><span class="sum-pick">Under 48.5 @ $1.90</span><span class="sum-conf">MARGINAL</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Manly Sea Eagles (STRONG) — 3.8 vs 0.5</div>
+      <div class="rec-sub">Suggested line: South Sydney Rabbitohs +1.7 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-neutral">2026 form 58% vs 54% NEUTRAL</span><span class="tot-ind tot-over">2026 margin +9 vs +5 HOME</span><span class="tot-ind tot-over">2026 H2H 1/1 HOME</span><span class="tot-ind tot-over">2025 margin +1 vs -8 HOME</span><span class="tot-ind tot-neutral">3yr H2H 2/4 NEUTRAL</span><span class="tot-ind tot-over">Venue 62% (33/53) HOME</span><span class="tot-ind tot-over">Market fav $1.56 HOME</span><span class="tot-ind tot-over">H2H ROI +21% (9g) HOME</span><span class="tot-ind tot-under">As dog 50% (6g) AWAY</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">Manly Sea Eagles: <b>$1.56</b> (NRL)</span> <span class="odds-chip">South Sydney Rabbitohs: <b>$2.44</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>Manly Sea Eagles</th><th>South Sydney Rabbitohs</th></tr>
+        <tr><td>Record</td><td>7-5 (58%)</td><td>6-5 (54%)</td></tr>
+        <tr><td>Home W%</td><td>3-3 (50%)</td><td>4-2 (67%)</td></tr>
+        <tr><td>Away W%</td><td>4-2 (67%)</td><td>2-3 (40%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>28.2/19.7</td><td>29.5/24.2</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Fav:</b> 4-2 (67%)</td><td><b>As Dog:</b> 3-3 (50%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: 4 Pines Park</div>
+      <div class="stat-line">Manly Sea Eagles at 4 Pines Park: <b>33-20</b> (62%)</div>
+      <div class="stat-line">South Sydney Rabbitohs at 4 Pines Park: <b>1-1</b> (50%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      <div class='stat-line'>H2H at venue: Manly Sea Eagles 1-1 (2 games)</div>
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 4G — Manly Sea Eagles 2W, South Sydney Rabbitohs 2W | Avg total: 35.2</div>
+      <div class="stat-line"><b>5yr:</b> 7G — Manly Sea Eagles 2W, South Sydney Rabbitohs 5W | Avg total: 41.9</div>
+      <div class="stat-line"><b>All-time:</b> 21G — Manly Sea Eagles 7W, South Sydney Rabbitohs 14W | Avg total: 42.0</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-home"><td>2025-07-06</td><td>Manly Sea Eagles</td><td>30-12</td><td>South Sydney Rabbitohs</td><td>-/-</td></tr><tr class="win-away"><td>2024-06-22</td><td>South Sydney Rabbitohs</td><td>14-0</td><td>Manly Sea Eagles</td><td>-/-</td></tr><tr class="win-home"><td>2024-03-03</td><td>Manly Sea Eagles</td><td>36-24</td><td>South Sydney Rabbitohs</td><td>1.95/1.90</td></tr><tr class="win-away"><td>2023-03-25</td><td>South Sydney Rabbitohs</td><td>13-12</td><td>Manly Sea Eagles</td><td>1.63/2.35</td></tr><tr class="win-away"><td>2022-04-29</td><td>South Sydney Rabbitohs</td><td>40-22</td><td>Manly Sea Eagles</td><td>1.56/2.50</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>Manly Sea Eagles</b> every home game vs South Sydney Rabbitohs: 5W/9G = <b class="roi-pos">+20.9% ROI</b></div>
+      <div class="stat-line">$1 on <b>South Sydney Rabbitohs</b> every away game vs Manly Sea Eagles: 4W/9G = <b class="roi-neg">-19.8% ROI</b></div>
+      <div class="stat-line">Manly Sea Eagles at 4 Pines Park (all opponents): 20W/34G = <b class="roi-neg">-2.6% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">Manly Sea Eagles +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">South Sydney Rabbitohs +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>Manly Sea Eagles</th><th>South Sydney Rabbitohs</th></tr>
+        <tr><td>Cover%</td><td>58% (7-5)</td><td>46% (5-6)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (19 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2024-03-03</td><td>36-24</td><td>+1.5</td><td>Eagles covered</td></tr><tr><td>2023-03-25</td><td>13-12</td><td>+4.5</td><td>Eagles covered</td></tr><tr><td>2022-04-29</td><td>40-22</td><td>+4.5</td><td>Rabbitohs covered</td></tr><tr><td>2021-09-24</td><td>36-16</td><td>+1.5</td><td>Rabbitohs covered</td></tr><tr><td>2021-03-20</td><td>12-26</td><td>+8.5</td><td>Rabbitohs covered</td></tr><tr><td>2020-08-22</td><td>56-16</td><td>+4.5</td><td>Rabbitohs covered</td></tr><tr><td>2019-09-20</td><td>34-26</td><td>+6.5</td><td>Rabbitohs covered</td></tr><tr><td>2019-07-13</td><td>21-20</td><td>+3.5</td><td>Eagles covered</td></tr><tr><td>2019-04-06</td><td>13-12</td><td>+4.0</td><td>Eagles covered</td></tr><tr><td>2018-03-24</td><td>34-6</td><td>-2.5</td><td>Rabbitohs covered</td></tr><tr><td>2017-04-28</td><td>8-46</td><td>-2.5</td><td>Eagles covered</td></tr><tr><td>2017-03-11</td><td>18-38</td><td>-2.5</td><td>Rabbitohs covered</td></tr><tr><td>2016-07-25</td><td>12-20</td><td>-3.5</td><td>Eagles covered</td></tr><tr><td>2016-03-31</td><td>12-16</td><td>+4.0</td><td>Rabbitohs covered</td></tr><tr><td>2015-08-07</td><td>28-8</td><td>+1.5</td><td>Eagles covered</td></tr><tr><td>2015-06-26</td><td>20-8</td><td>+9.5</td><td>Rabbitohs covered</td></tr><tr><td>2014-09-12</td><td>24-40</td><td>+6.5</td><td>Rabbitohs covered</td></tr><tr><td>2014-08-08</td><td>23-4</td><td>-2.5</td><td>Rabbitohs covered</td></tr><tr><td>2014-03-14</td><td>14-12</td><td>+7.5</td><td>Eagles covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">Manly Sea Eagles cover rate: <b>42%</b> (8/19) | South Sydney Rabbitohs: <b>58%</b> (11/19)</div>
+      <div class="stat-line">$1 on <b>Manly Sea Eagles</b> covering H2H: 8W/19G = <b class="roi-neg">-19.6% ROI</b></div>
+      <div class="stat-line">$1 on <b>South Sydney Rabbitohs</b> covering H2H: 11W/19G = <b class="roi-pos">+10.6% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>Manly Sea Eagles</b> covering every game: 7W/12G = <b>58% cover rate</b></div>
+      <div class="stat-line">$1 on <b>South Sydney Rabbitohs</b> covering every game: 5W/11G = <b>46% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — Manly Sea Eagles (21 H2H games, best win: +38, worst loss: -40)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 10%</span> | <span>-15.5: 14%</span> | <span>-11.5: 19%</span> | <span>-7.5: 24%</span> | <span>-1.5: 29%</span> | <span>-0.5: 33%</span> | <span>+0.5: 33%</span> | <span>+1.5: 43%</span> | <span>+5.5: 48%</span> | <span>+9.5: 52%</span> | <span>+13.5: 57%</span> | <span>+15.5: 67%</span> | <span>+19.5: 81%</span></div>
+      <div class="sub-title">Line Ceiling — South Sydney Rabbitohs (best win: +40, worst loss: -38)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 19%</span> | <span>-15.5: 33%</span> | <span>-13.5: 43%</span> | <span>-11.5: 48%</span> | <span>-7.5: 52%</span> | <span>-3.5: 57%</span> | <span>-0.5: 67%</span> | <span>+0.5: 67%</span> | <span>+1.5: 71%</span> | <span>+3.5: 76%</span> | <span>+9.5: 81%</span> | <span>+13.5: 86%</span> | <span>+19.5: 90%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">DATA SUGGESTS: UNDER 48.5 (MARGINAL) — 1.0 over vs 2.0 under</div>
+      <div class="rec-sub">Consensus: 6 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-neutral">2026 median 49 NEUTRAL</span><span class="tot-ind tot-under">H2H median 40 UNDER (-8)</span><span class="tot-ind tot-neutral">H2H overs 43% NEUTRAL</span><span class="tot-ind tot-under">Venue median 46 UNDER (-2)</span><span class="tot-ind tot-over">PF/PA 51 OVER (+2)</span><span class="tot-ind tot-under">2025 median 40 UNDER (-8)</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>Manly Sea Eagles</th><th>South Sydney Rabbitohs</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>47.9</td><td>53.6</td><td>50.8</td></tr>
+        <tr><td>Median</td><td>49.5</td><td>48.0</td><td><b>48.8</b></td></tr>
+        <tr><td>Over%</td><td>50% (6-6)</td><td>46% (5-6)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: 4 Pines Park (53 games)</div>
+      <div class="stat-line">Mean: <b>47.4</b> | Median: <b>46.0</b> | vs line: <b class="roi-neg">-2.5</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">Manly Sea Eagles PF 28.2 / PA 19.7 | South Sydney Rabbitohs PF 29.5 / PA 24.2</div>
+      <div class="stat-line">Balanced expected total: <b>50.8</b> vs line: <b class="roi-pos">+2.3</b></div>
+      <div class="sub-title">Matchup Totals History (21 games)</div>
+      <div class="stat-line">Mean: <b>42.0</b> | Median: <b>40.0</b> | Over rate: <b>43%</b> (9/21)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="under"><td>2025-07-06</td><td>30-12</td><td>42</td><td>47.5</td><td>UNDER</td></tr><tr class="under"><td>2024-06-22</td><td>14-0</td><td>14</td><td>49.5</td><td>UNDER</td></tr><tr class="over"><td>2024-03-03</td><td>36-24</td><td>60</td><td>40.5</td><td>OVER</td></tr><tr class="under"><td>2023-03-25</td><td>13-12</td><td>25</td><td>43.5</td><td>UNDER</td></tr><tr class="over"><td>2022-04-29</td><td>40-22</td><td>62</td><td>40.5</td><td>OVER</td></tr><tr class="over"><td>2021-09-24</td><td>36-16</td><td>52</td><td>45.5</td><td>OVER</td></tr><tr class="over"><td>2021-03-20</td><td>12-26</td><td>38</td><td>35.5</td><td>OVER</td></tr><tr class="over"><td>2020-08-22</td><td>56-16</td><td>72</td><td>41.5</td><td>OVER</td></tr><tr class="over"><td>2019-09-20</td><td>34-26</td><td>60</td><td>37.5</td><td>OVER</td></tr><tr class="under"><td>2019-07-13</td><td>21-20</td><td>41</td><td>41.5</td><td>UNDER</td></tr><tr class="under"><td>2019-04-06</td><td>13-12</td><td>25</td><td>44.5</td><td>UNDER</td></tr><tr class="under"><td>2018-03-24</td><td>34-6</td><td>40</td><td>42.5</td><td>UNDER</td></tr><tr class="over"><td>2017-04-28</td><td>8-46</td><td>54</td><td>40.0</td><td>OVER</td></tr><tr class="over"><td>2017-03-11</td><td>18-38</td><td>56</td><td>42.0</td><td>OVER</td></tr><tr class="under"><td>2016-07-25</td><td>12-20</td><td>32</td><td>43.5</td><td>UNDER</td></tr><tr class="under"><td>2016-03-31</td><td>12-16</td><td>28</td><td>38.0</td><td>UNDER</td></tr><tr class="under"><td>2015-08-07</td><td>28-8</td><td>36</td><td>38.5</td><td>UNDER</td></tr><tr class="under"><td>2015-06-26</td><td>20-8</td><td>28</td><td>40.0</td><td>UNDER</td></tr><tr class="over"><td>2014-09-12</td><td>24-40</td><td>64</td><td>35.5</td><td>OVER</td></tr><tr class="under"><td>2014-08-08</td><td>23-4</td><td>27</td><td>36.5</td><td>UNDER</td></tr><tr class="under"><td>2014-03-14</td><td>14-12</td><td>26</td><td>38.5</td><td>UNDER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 9W/21G = <b class="roi-neg">-18.1% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 12W/21G = <b class="roi-pos">+9.1% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (21 H2H games, max: 72)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U25.5: 14%</span> | <span>U30.5: 33%</span> | <span>U35.5: 38%</span> | <span>U40.5: 52%</span> | <span>U45.5: 62%</span> | <span class="roi-pos" title="Fair: $1.62">U48.5: 62% <b>$1.90</b></span> | <span>U55.5: 71%</span> | <span>U60.5: 86%</span> | <span>U65.5: 95%</span> | <span>U75.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 14)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O70.5: 5%</span> | <span>O60.5: 14%</span> | <span>O55.5: 29%</span> | <span>O50.5: 38%</span> | <span class="" title="Fair: $2.62">O48.5: 38% <b>$1.90</b></span> | <span>O40.5: 48%</span> | <span>O35.5: 62%</span> | <span>O30.5: 67%</span> | <span>O25.5: 86%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">Manly Sea Eagles (predicted: 22.1pts)</div>
+      <div class="stat-line">2026 Home avg: <b>26.0</b> | vs South Sydney Rabbitohs: <b>18.2</b> (21G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">South Sydney Rabbitohs (predicted: 19.7pts)</div>
+      <div class="stat-line">2026 Away avg: <b>15.6</b> | vs Manly Sea Eagles: <b>23.8</b> (21G)</div>
+      <div class="stat-line">vs Manly Sea Eagles historically: <b>23.8</b> pts (21 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-0" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(0,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(0,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(0,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-0">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-0">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-0">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+    <div class="mp " id="match-1">
+      <div class="match-header">
+        <h2>Melbourne Storm vs Newcastle Knights</h2>
+        <div class="match-meta">Fri 5 Jun 6:00pm | AAMI Park</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-marginal"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Newcastle Knights @ $2.33</span><span class="sum-conf">MARGINAL</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Newcastle Knights (MARGINAL) — 2.2 vs 2.5</div>
+      <div class="rec-sub">Suggested line: Melbourne Storm +1.6 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-under">2026 form 67% vs 38% AWAY</span><span class="tot-ind tot-under">2026 margin +3 vs -0 AWAY</span><span class="tot-ind tot-over">2026 H2H 1/1 HOME</span><span class="tot-ind tot-over">2025 margin +8 vs -12 HOME</span><span class="tot-ind tot-neutral">3yr H2H 2/4 NEUTRAL</span><span class="tot-ind tot-over">Venue 80% (49/61) HOME</span><span class="tot-ind tot-over">Market fav $1.61 HOME</span><span class="tot-ind tot-neutral">H2H ROI home -1%/away +2% NEUTRAL</span><span class="tot-ind tot-under">As dog 56% (9g) AWAY</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">Melbourne Storm: <b>$1.61</b> (NRL)</span> <span class="odds-chip">Newcastle Knights: <b>$2.33</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>Melbourne Storm</th><th>Newcastle Knights</th></tr>
+        <tr><td>Record</td><td>5-8 (38%)</td><td>8-4 (67%)</td></tr>
+        <tr><td>Home W%</td><td>3-3 (50%)</td><td>4-2 (67%)</td></tr>
+        <tr><td>Away W%</td><td>2-5 (29%)</td><td>4-2 (67%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>24.2/24.5</td><td>28.3/25.5</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Fav:</b> 4-5 (44%)</td><td><b>As Dog:</b> 5-4 (56%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: AAMI Park</div>
+      <div class="stat-line">Melbourne Storm at AAMI Park: <b>49-12</b> (80%)</div>
+      <div class="stat-line">Newcastle Knights at AAMI Park: <b>0-1</b> (0%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      <div class='stat-line'>H2H at venue: Melbourne Storm 1-0 (1 games)</div>
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 4G — Melbourne Storm 2W, Newcastle Knights 2W | Avg total: 45.0</div>
+      <div class="stat-line"><b>5yr:</b> 6G — Melbourne Storm 4W, Newcastle Knights 2W | Avg total: 47.3</div>
+      <div class="stat-line"><b>All-time:</b> 28G — Melbourne Storm 22W, Newcastle Knights 6W | Avg total: 42.2</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-home"><td>2025-07-12</td><td>Newcastle Knights</td><td>14-32</td><td>Melbourne Storm</td><td>-/-</td></tr><tr class="win-home"><td>2024-06-09</td><td>Melbourne Storm</td><td>36-28</td><td>Newcastle Knights</td><td>-/-</td></tr><tr class="win-away"><td>2024-03-24</td><td>Newcastle Knights</td><td>14-12</td><td>Melbourne Storm</td><td>1.77/2.10</td></tr><tr class="win-away"><td>2023-07-22</td><td>Newcastle Knights</td><td>26-18</td><td>Melbourne Storm</td><td>3.20/1.36</td></tr><tr class="win-home"><td>2022-05-01</td><td>Newcastle Knights</td><td>2-50</td><td>Melbourne Storm</td><td>9.00/1.07</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>Melbourne Storm</b> every home game vs Newcastle Knights: 14W/16G = <b class="roi-neg">-1.1% ROI</b></div>
+      <div class="stat-line">$1 on <b>Newcastle Knights</b> every away game vs Melbourne Storm: 2W/16G = <b class="roi-pos">+1.5% ROI</b></div>
+      <div class="stat-line">Melbourne Storm at AAMI Park (all opponents): 32W/40G = <b class="roi-pos">+9.0% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">Melbourne Storm +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">Newcastle Knights +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>Melbourne Storm</th><th>Newcastle Knights</th></tr>
+        <tr><td>Cover%</td><td>38% (5-8)</td><td>58% (7-5)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (19 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2024-03-24</td><td>14-12</td><td>+1.5</td><td>Knights covered</td></tr><tr><td>2023-07-22</td><td>26-18</td><td>-8.5</td><td>Knights covered</td></tr><tr><td>2022-05-01</td><td>2-50</td><td>-22.5</td><td>Storm covered</td></tr><tr><td>2021-07-17</td><td>48-4</td><td>-15.5</td><td>Storm covered</td></tr><tr><td>2020-08-02</td><td>26-16</td><td>-12.0</td><td>Knights covered</td></tr><tr><td>2020-06-13</td><td>12-26</td><td>-3.5</td><td>Storm covered</td></tr><tr><td>2019-06-15</td><td>34-4</td><td>-7.5</td><td>Storm covered</td></tr><tr><td>2018-06-17</td><td>10-28</td><td>-10.5</td><td>Storm covered</td></tr><tr><td>2018-04-13</td><td>40-14</td><td>-10.5</td><td>Storm covered</td></tr><tr><td>2017-08-19</td><td>12-44</td><td>-10.5</td><td>Storm covered</td></tr><tr><td>2017-06-02</td><td>40-12</td><td>-15.0</td><td>Storm covered</td></tr><tr><td>2016-07-17</td><td>16-20</td><td>-18.5</td><td>Knights covered</td></tr><tr><td>2016-04-02</td><td>18-14</td><td>-13.5</td><td>Knights covered</td></tr><tr><td>2015-08-24</td><td>6-20</td><td>-17.0</td><td>Knights covered</td></tr><tr><td>2014-08-09</td><td>32-30</td><td>-12.5</td><td>Knights covered</td></tr><tr><td>2014-03-24</td><td>28-20</td><td>-10.5</td><td>Knights covered</td></tr><tr><td>2013-09-21</td><td>16-18</td><td>-8.0</td><td>Knights covered</td></tr><tr><td>2013-08-18</td><td>10-23</td><td>-6.5</td><td>Storm covered</td></tr><tr><td>2013-06-16</td><td>16-14</td><td>-12.0</td><td>Knights covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">Melbourne Storm cover rate: <b>47%</b> (9/19) | Newcastle Knights: <b>53%</b> (10/19)</div>
+      <div class="stat-line">$1 on <b>Melbourne Storm</b> covering H2H: 9W/19G = <b class="roi-neg">-9.5% ROI</b></div>
+      <div class="stat-line">$1 on <b>Newcastle Knights</b> covering H2H: 10W/19G = <b class="roi-pos">+0.5% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>Melbourne Storm</b> covering every game: 5W/13G = <b>38% cover rate</b></div>
+      <div class="stat-line">$1 on <b>Newcastle Knights</b> covering every game: 7W/12G = <b>58% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — Melbourne Storm (28 H2H games, best win: +48, worst loss: -14)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 29%</span> | <span>-15.5: 36%</span> | <span>-13.5: 39%</span> | <span>-11.5: 46%</span> | <span>-9.5: 54%</span> | <span>-7.5: 61%</span> | <span>-5.5: 64%</span> | <span>-3.5: 75%</span> | <span>-1.5: 79%</span> | <span>+0.5: 79%</span> | <span>+3.5: 89%</span> | <span>+9.5: 93%</span> | <span>+13.5: 96%</span> | <span>+15.5: 100%</span></div>
+      <div class="sub-title">Line Ceiling — Newcastle Knights (best win: +14, worst loss: -48)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-13.5: 4%</span> | <span>-11.5: 7%</span> | <span>-7.5: 11%</span> | <span>-1.5: 21%</span> | <span>+0.5: 21%</span> | <span>+3.5: 25%</span> | <span>+5.5: 36%</span> | <span>+7.5: 39%</span> | <span>+9.5: 46%</span> | <span>+11.5: 54%</span> | <span>+13.5: 61%</span> | <span>+15.5: 64%</span> | <span>+19.5: 71%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">MARGINAL: Split signal on 48.5 — 2.0 over vs 2.0 under</div>
+      <div class="rec-sub">Consensus: 6 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-over">2026 median 52 OVER (+3)</span><span class="tot-ind tot-under">H2H median 42 UNDER (-6)</span><span class="tot-ind tot-neutral">H2H overs 48% NEUTRAL</span><span class="tot-ind tot-under">Venue median 46 UNDER (-2)</span><span class="tot-ind tot-over">PF/PA 51 OVER (+3)</span><span class="tot-ind tot-under">2025 median 42 UNDER (-6)</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>Melbourne Storm</th><th>Newcastle Knights</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>48.6</td><td>53.8</td><td>51.2</td></tr>
+        <tr><td>Median</td><td>52.0</td><td>51.0</td><td><b>51.5</b></td></tr>
+        <tr><td>Over%</td><td>62% (8-5)</td><td>67% (8-4)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: AAMI Park (61 games)</div>
+      <div class="stat-line">Mean: <b>45.9</b> | Median: <b>46.0</b> | vs line: <b class="roi-neg">-2.5</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">Melbourne Storm PF 24.2 / PA 24.5 | Newcastle Knights PF 28.3 / PA 25.5</div>
+      <div class="stat-line">Balanced expected total: <b>51.2</b> vs line: <b class="roi-pos">+2.7</b></div>
+      <div class="sub-title">Matchup Totals History (21 games)</div>
+      <div class="stat-line">Mean: <b>43.0</b> | Median: <b>42.0</b> | Over rate: <b>48%</b> (10/21)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="over"><td>2025-07-12</td><td>14-32</td><td>46</td><td>45.5</td><td>OVER</td></tr><tr class="over"><td>2024-06-09</td><td>36-28</td><td>64</td><td>49.5</td><td>OVER</td></tr><tr class="under"><td>2024-03-24</td><td>14-12</td><td>26</td><td>42.5</td><td>UNDER</td></tr><tr class="under"><td>2023-07-22</td><td>26-18</td><td>44</td><td>45.5</td><td>UNDER</td></tr><tr class="over"><td>2022-05-01</td><td>2-50</td><td>52</td><td>45.5</td><td>OVER</td></tr><tr class="over"><td>2021-07-17</td><td>48-4</td><td>52</td><td>49.5</td><td>OVER</td></tr><tr class="under"><td>2020-08-02</td><td>26-16</td><td>42</td><td>42.5</td><td>UNDER</td></tr><tr class="over"><td>2020-06-13</td><td>12-26</td><td>38</td><td>36.5</td><td>OVER</td></tr><tr class="under"><td>2019-06-15</td><td>34-4</td><td>38</td><td>40.5</td><td>UNDER</td></tr><tr class="under"><td>2018-06-17</td><td>10-28</td><td>38</td><td>43.5</td><td>UNDER</td></tr><tr class="over"><td>2018-04-13</td><td>40-14</td><td>54</td><td>38.5</td><td>OVER</td></tr><tr class="over"><td>2017-08-19</td><td>12-44</td><td>56</td><td>43.5</td><td>OVER</td></tr><tr class="over"><td>2017-06-02</td><td>40-12</td><td>52</td><td>41.5</td><td>OVER</td></tr><tr class="under"><td>2016-07-17</td><td>16-20</td><td>36</td><td>47.5</td><td>UNDER</td></tr><tr class="under"><td>2016-04-02</td><td>18-14</td><td>32</td><td>44.5</td><td>UNDER</td></tr><tr class="under"><td>2015-08-24</td><td>6-20</td><td>26</td><td>44.0</td><td>UNDER</td></tr><tr class="over"><td>2014-08-09</td><td>32-30</td><td>62</td><td>42.5</td><td>OVER</td></tr><tr class="over"><td>2014-03-24</td><td>28-20</td><td>48</td><td>40.5</td><td>OVER</td></tr><tr class="under"><td>2013-09-21</td><td>16-18</td><td>34</td><td>34.5</td><td>UNDER</td></tr><tr class="under"><td>2013-08-18</td><td>10-23</td><td>33</td><td>40.5</td><td>UNDER</td></tr><tr class="under"><td>2013-06-16</td><td>16-14</td><td>30</td><td>40.5</td><td>UNDER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 10W/21G = <b class="roi-neg">-9.0% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 11W/21G = <b class="roi-neg">+0.0% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (28 H2H games, max: 64)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U30.5: 14%</span> | <span>U35.5: 32%</span> | <span>U40.5: 54%</span> | <span>U45.5: 61%</span> | <span class="roi-pos" title="Fair: $1.47">U48.5: 68% <b>$1.90</b></span> | <span>U55.5: 86%</span> | <span>U60.5: 93%</span> | <span>U65.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 26)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O60.5: 7%</span> | <span>O55.5: 14%</span> | <span>O50.5: 32%</span> | <span class="" title="Fair: $3.12">O48.5: 32% <b>$1.90</b></span> | <span>O45.5: 39%</span> | <span>O40.5: 46%</span> | <span>O35.5: 68%</span> | <span>O30.5: 86%</span> | <span>O25.5: 100%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">Melbourne Storm (predicted: 30.8pts)</div>
+      <div class="stat-line">2026 Home avg: <b>34.0</b> | vs Newcastle Knights: <b>27.5</b> (28G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">Newcastle Knights (predicted: 14.7pts)</div>
+      <div class="stat-line">2026 Away avg: <b>14.8</b> | vs Melbourne Storm: <b>14.7</b> (28G)</div>
+      <div class="stat-line">vs Melbourne Storm historically: <b>14.7</b> pts (28 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-1" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(1,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(1,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(1,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-1">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-1">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-1">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+    <div class="mp " id="match-2">
+      <div class="match-header">
+        <h2>Canberra Raiders vs Sydney Roosters</h2>
+        <div class="match-meta">Fri 5 Jun 8:00pm | GIO Stadium</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-marginal"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Sydney Roosters @ $1.68</span><span class="sum-conf">MARGINAL</span></div><div class="sum-bet sum-lean"><span class="sum-icon">&#9660;</span><span class="sum-market">Total</span><span class="sum-pick">Under 48.5 @ $1.90</span><span class="sum-conf">LEAN</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Sydney Roosters (MARGINAL) — 2.0 vs 2.8</div>
+      <div class="rec-sub">Suggested line: Canberra Raiders +5.1 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-under">2026 form 64% vs 42% AWAY</span><span class="tot-ind tot-under">2026 margin +4 vs -6 AWAY</span><span class="tot-ind tot-over">2026 H2H 1/1 HOME</span><span class="tot-ind tot-neutral">2025 margin +5 vs +5 NEUTRAL</span><span class="tot-ind tot-over">3yr H2H 3/4 (75%) HOME</span><span class="tot-ind tot-neutral">Venue 58% (34/59) NEUTRAL</span><span class="tot-ind tot-under">Market fav $1.68 AWAY</span><span class="tot-ind tot-over">H2H ROI +49% (12g) HOME</span><span class="tot-ind tot-under">As fav 70% (10g) AWAY</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">Canberra Raiders: <b>$2.19</b> (NRL)</span> <span class="odds-chip">Sydney Roosters: <b>$1.68</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>Canberra Raiders</th><th>Sydney Roosters</th></tr>
+        <tr><td>Record</td><td>5-7 (42%)</td><td>7-4 (64%)</td></tr>
+        <tr><td>Home W%</td><td>2-4 (33%)</td><td>4-2 (67%)</td></tr>
+        <tr><td>Away W%</td><td>3-3 (50%)</td><td>3-2 (60%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>20.8/26.8</td><td>27.0/22.7</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Dog:</b> 4-3 (57%)</td><td><b>As Fav:</b> 7-3 (70%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: GIO Stadium</div>
+      <div class="stat-line">Canberra Raiders at GIO Stadium: <b>34-25</b> (58%)</div>
+      <div class="stat-line">Sydney Roosters at GIO Stadium: <b>1-1</b> (50%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      <div class='stat-line'>H2H at venue: Canberra Raiders 1-1 (2 games)</div>
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 4G — Canberra Raiders 3W, Sydney Roosters 1W | Avg total: 43.5</div>
+      <div class="stat-line"><b>5yr:</b> 7G — Canberra Raiders 4W, Sydney Roosters 3W | Avg total: 46.9</div>
+      <div class="stat-line"><b>All-time:</b> 26G — Canberra Raiders 12W, Sydney Roosters 14W | Avg total: 40.7</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-home"><td>2025-06-01</td><td>Sydney Roosters</td><td>24-26</td><td>Canberra Raiders</td><td>-/-</td></tr><tr class="win-home"><td>2024-09-01</td><td>Sydney Roosters</td><td>12-14</td><td>Canberra Raiders</td><td>-/-</td></tr><tr class="win-away"><td>2024-05-25</td><td>Canberra Raiders</td><td>16-44</td><td>Sydney Roosters</td><td>-/-</td></tr><tr class="win-home"><td>2023-06-25</td><td>Sydney Roosters</td><td>18-20</td><td>Canberra Raiders</td><td>1.65/2.30</td></tr><tr class="win-home"><td>2022-06-05</td><td>Canberra Raiders</td><td>22-16</td><td>Sydney Roosters</td><td>2.55/1.54</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>Canberra Raiders</b> every home game vs Sydney Roosters: 6W/12G = <b class="roi-pos">+48.9% ROI</b></div>
+      <div class="stat-line">$1 on <b>Sydney Roosters</b> every away game vs Canberra Raiders: 6W/12G = <b class="roi-neg">-35.0% ROI</b></div>
+      <div class="stat-line">Canberra Raiders at GIO Stadium (all opponents): 21W/39G = <b class="roi-neg">-13.4% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">Canberra Raiders +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">Sydney Roosters +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>Canberra Raiders</th><th>Sydney Roosters</th></tr>
+        <tr><td>Cover%</td><td>42% (5-7)</td><td>54% (6-5)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (17 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2023-06-25</td><td>18-20</td><td>+3.5</td><td>Raiders covered</td></tr><tr><td>2022-06-05</td><td>22-16</td><td>+5.5</td><td>Raiders covered</td></tr><tr><td>2021-09-02</td><td>16-40</td><td>+1.5</td><td>Roosters covered</td></tr><tr><td>2021-05-29</td><td>44-16</td><td>+9.5</td><td>Roosters covered</td></tr><tr><td>2020-10-09</td><td>18-22</td><td>+6.0</td><td>Raiders covered</td></tr><tr><td>2020-09-05</td><td>6-18</td><td>+6.5</td><td>Roosters covered</td></tr><tr><td>2020-07-16</td><td>20-24</td><td>+12.5</td><td>Raiders covered</td></tr><tr><td>2019-10-06</td><td>14-8</td><td>+7.5</td><td>Raiders covered</td></tr><tr><td>2019-08-11</td><td>18-22</td><td>-1.5</td><td>Roosters covered</td></tr><tr><td>2019-05-12</td><td>30-24</td><td>+8.0</td><td>Raiders covered</td></tr><tr><td>2018-08-19</td><td>14-12</td><td>+6.0</td><td>Raiders covered</td></tr><tr><td>2017-05-28</td><td>24-16</td><td>-9.5</td><td>Roosters covered</td></tr><tr><td>2016-03-12</td><td>21-20</td><td>-2.5</td><td>Roosters covered</td></tr><tr><td>2015-03-29</td><td>34-6</td><td>+16.5</td><td>Roosters covered</td></tr><tr><td>2014-05-31</td><td>26-12</td><td>+14.0</td><td>Raiders covered</td></tr><tr><td>2013-08-10</td><td>28-22</td><td>+13.5</td><td>Raiders covered</td></tr><tr><td>2013-04-07</td><td>24-22</td><td>+6.0</td><td>Raiders covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">Canberra Raiders cover rate: <b>59%</b> (10/17) | Sydney Roosters: <b>41%</b> (7/17)</div>
+      <div class="stat-line">$1 on <b>Canberra Raiders</b> covering H2H: 10W/17G = <b class="roi-pos">+12.4% ROI</b></div>
+      <div class="stat-line">$1 on <b>Sydney Roosters</b> covering H2H: 7W/17G = <b class="roi-neg">-21.4% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>Canberra Raiders</b> covering every game: 5W/12G = <b>42% cover rate</b></div>
+      <div class="stat-line">$1 on <b>Sydney Roosters</b> covering every game: 6W/11G = <b>54% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — Canberra Raiders (26 H2H games, best win: +26, worst loss: -30)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 4%</span> | <span>-7.5: 8%</span> | <span>-5.5: 12%</span> | <span>-3.5: 23%</span> | <span>-1.5: 42%</span> | <span>-0.5: 46%</span> | <span>+0.5: 46%</span> | <span>+5.5: 50%</span> | <span>+7.5: 65%</span> | <span>+11.5: 69%</span> | <span>+13.5: 73%</span> | <span>+15.5: 77%</span></div>
+      <div class="sub-title">Line Ceiling — Sydney Roosters (best win: +30, worst loss: -26)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 23%</span> | <span>-13.5: 27%</span> | <span>-11.5: 31%</span> | <span>-9.5: 35%</span> | <span>-5.5: 50%</span> | <span>-3.5: 54%</span> | <span>+0.5: 54%</span> | <span>+1.5: 58%</span> | <span>+3.5: 77%</span> | <span>+5.5: 88%</span> | <span>+7.5: 92%</span> | <span>+9.5: 96%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">DATA SUGGESTS: UNDER 48.5 (LEAN) — 0.0 over vs 1.5 under</div>
+      <div class="rec-sub">Consensus: 6 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-neutral">2026 median 48 NEUTRAL</span><span class="tot-ind tot-under">H2H median 40 UNDER (-8)</span><span class="tot-ind tot-neutral">H2H overs 45% NEUTRAL</span><span class="tot-ind tot-under">Venue median 46 UNDER (-2)</span><span class="tot-ind tot-neutral">PF/PA 49 NEUTRAL</span><span class="tot-ind tot-neutral">2025 median 50 NEUTRAL</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>Canberra Raiders</th><th>Sydney Roosters</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>47.5</td><td>49.7</td><td>48.6</td></tr>
+        <tr><td>Median</td><td>47.5</td><td>49.0</td><td><b>48.2</b></td></tr>
+        <tr><td>Over%</td><td>33% (4-8)</td><td>64% (7-4)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: GIO Stadium (59 games)</div>
+      <div class="stat-line">Mean: <b>46.7</b> | Median: <b>46.0</b> | vs line: <b class="roi-neg">-2.5</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">Canberra Raiders PF 20.8 / PA 26.8 | Sydney Roosters PF 27.0 / PA 22.7</div>
+      <div class="stat-line">Balanced expected total: <b>48.6</b> vs line: <b class="roi-pos">+0.1</b></div>
+      <div class="sub-title">Matchup Totals History (20 games)</div>
+      <div class="stat-line">Mean: <b>41.6</b> | Median: <b>40.0</b> | Over rate: <b>45%</b> (9/20)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="over"><td>2025-06-01</td><td>24-26</td><td>50</td><td>47.5</td><td>OVER</td></tr><tr class="under"><td>2024-09-01</td><td>12-14</td><td>26</td><td>54.5</td><td>UNDER</td></tr><tr class="over"><td>2024-05-25</td><td>16-44</td><td>60</td><td>46.5</td><td>OVER</td></tr><tr class="under"><td>2023-06-25</td><td>18-20</td><td>38</td><td>43.5</td><td>UNDER</td></tr><tr class="under"><td>2022-06-05</td><td>22-16</td><td>38</td><td>41.5</td><td>UNDER</td></tr><tr class="over"><td>2021-09-02</td><td>16-40</td><td>56</td><td>42.5</td><td>OVER</td></tr><tr class="over"><td>2021-05-29</td><td>44-16</td><td>60</td><td>49.5</td><td>OVER</td></tr><tr class="under"><td>2020-10-09</td><td>18-22</td><td>40</td><td>42.5</td><td>UNDER</td></tr><tr class="under"><td>2020-09-05</td><td>6-18</td><td>24</td><td>38.5</td><td>UNDER</td></tr><tr class="over"><td>2020-07-16</td><td>20-24</td><td>44</td><td>37.5</td><td>OVER</td></tr><tr class="under"><td>2019-10-06</td><td>14-8</td><td>22</td><td>34.5</td><td>UNDER</td></tr><tr class="over"><td>2019-08-11</td><td>18-22</td><td>40</td><td>39.5</td><td>OVER</td></tr><tr class="over"><td>2019-05-12</td><td>30-24</td><td>54</td><td>43.5</td><td>OVER</td></tr><tr class="under"><td>2018-08-19</td><td>14-12</td><td>26</td><td>46.5</td><td>UNDER</td></tr><tr class="under"><td>2017-05-28</td><td>24-16</td><td>40</td><td>42.0</td><td>UNDER</td></tr><tr class="under"><td>2016-03-12</td><td>21-20</td><td>41</td><td>44.0</td><td>UNDER</td></tr><tr class="under"><td>2015-03-29</td><td>34-6</td><td>40</td><td>46.0</td><td>UNDER</td></tr><tr class="under"><td>2014-05-31</td><td>26-12</td><td>38</td><td>42.5</td><td>UNDER</td></tr><tr class="over"><td>2013-08-10</td><td>28-22</td><td>50</td><td>42.5</td><td>OVER</td></tr><tr class="over"><td>2013-04-07</td><td>24-22</td><td>46</td><td>40.5</td><td>OVER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 9W/20G = <b class="roi-neg">-14.0% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 11W/20G = <b class="roi-pos">+5.1% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (26 H2H games, max: 60)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U25.5: 12%</span> | <span>U30.5: 19%</span> | <span>U35.5: 27%</span> | <span>U40.5: 54%</span> | <span>U45.5: 69%</span> | <span class="roi-pos" title="Fair: $1.37">U48.5: 73% <b>$1.90</b></span> | <span>U50.5: 85%</span> | <span>U55.5: 88%</span> | <span>U60.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 22)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O55.5: 12%</span> | <span>O50.5: 15%</span> | <span class="" title="Fair: $3.72">O48.5: 27% <b>$1.90</b></span> | <span>O45.5: 31%</span> | <span>O40.5: 46%</span> | <span>O35.5: 73%</span> | <span>O30.5: 81%</span> | <span>O25.5: 88%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">Canberra Raiders (predicted: 25.1pts)</div>
+      <div class="stat-line">2026 Home avg: <b>32.9</b> | vs Sydney Roosters: <b>17.2</b> (26G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">Sydney Roosters (predicted: 24.2pts)</div>
+      <div class="stat-line">2026 Away avg: <b>24.9</b> | vs Canberra Raiders: <b>23.5</b> (26G)</div>
+      <div class="stat-line">vs Canberra Raiders historically: <b>23.5</b> pts (26 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-2" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(2,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(2,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(2,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-2">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-2">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-2">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+    <div class="mp " id="match-3">
+      <div class="match-header">
+        <h2>North Queensland Cowboys vs Dolphins</h2>
+        <div class="match-meta">Sat 6 Jun 5:30pm | Queensland Country Bank Stadium</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-lean"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Dolphins @ $1.58</span><span class="sum-conf">LEAN</span></div><div class="sum-bet sum-lean"><span class="sum-icon">&#9650;</span><span class="sum-market">Total</span><span class="sum-pick">Over 48.5 @ $1.90</span><span class="sum-conf">LEAN</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Dolphins (LEAN) — 0.5 vs 3.2</div>
+      <div class="rec-sub">Suggested line: North Queensland Cowboys +1.8 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-neutral">2026 form 62% vs 54% NEUTRAL</span><span class="tot-ind tot-under">2026 margin +5 vs +1 AWAY</span><span class="tot-ind tot-under">2026 H2H 2/2 AWAY</span><span class="tot-ind tot-under">2025 margin +5 vs -6 AWAY</span><span class="tot-ind tot-under">3yr H2H 4/6 (67%) AWAY</span><span class="tot-ind tot-under">Market fav $1.58 AWAY</span><span class="tot-ind tot-over">As dog 71% (7g) HOME</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">North Queensland Cowboys: <b>$2.38</b> (NRL)</span> <span class="odds-chip">Dolphins: <b>$1.58</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>North Queensland Cowboys</th><th>Dolphins</th></tr>
+        <tr><td>Record</td><td>8-5 (62%)</td><td>6-5 (54%)</td></tr>
+        <tr><td>Home W%</td><td>4-2 (67%)</td><td>3-3 (50%)</td></tr>
+        <tr><td>Away W%</td><td>4-3 (57%)</td><td>3-2 (60%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>25.3/24.3</td><td>26.4/21.7</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Dog:</b> 5-2 (71%)</td><td><b>As Fav:</b> 4-2 (67%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: Queensland Country Bank Stadium</div>
+      <div class="stat-line">North Queensland Cowboys at Queensland Country Bank Stadium: <b>0-0</b> (50%)</div>
+      <div class="stat-line">Dolphins at Queensland Country Bank Stadium: <b>0-0</b> (50%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 6G — North Queensland Cowboys 2W, Dolphins 4W | Avg total: 57.0</div>
+      <div class="stat-line"><b>5yr:</b> 6G — North Queensland Cowboys 2W, Dolphins 4W | Avg total: 57.0</div>
+      <div class="stat-line"><b>All-time:</b> 6G — North Queensland Cowboys 2W, Dolphins 4W | Avg total: 57.0</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-away"><td>2025-07-17</td><td>Dolphins</td><td>43-24</td><td>North Queensland Cowboys</td><td>-/-</td></tr><tr class="win-away"><td>2025-06-14</td><td>North Queensland Cowboys</td><td>4-58</td><td>Dolphins</td><td>-/-</td></tr><tr class="win-away"><td>2024-05-04</td><td>North Queensland Cowboys</td><td>26-28</td><td>Dolphins</td><td>-/-</td></tr><tr class="win-home"><td>2024-03-10</td><td>Dolphins</td><td>18-43</td><td>North Queensland Cowboys</td><td>2.45/1.58</td></tr><tr class="win-home"><td>2023-08-25</td><td>Dolphins</td><td>10-34</td><td>North Queensland Cowboys</td><td>3.20/1.37</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>North Queensland Cowboys</b> every home game vs Dolphins: 0W/3G = <b class="roi-neg">-100.0% ROI</b></div>
+      <div class="stat-line">$1 on <b>Dolphins</b> every away game vs North Queensland Cowboys: 3W/3G = <b class="roi-pos">+350.0% ROI</b></div>
+      <div class="stat-line">North Queensland Cowboys at Queensland Country Bank Stadium (all opponents): 0W/0G = <b class="roi-neg">+0.0% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">North Queensland Cowboys +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">Dolphins +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>North Queensland Cowboys</th><th>Dolphins</th></tr>
+        <tr><td>Cover%</td><td>62% (8-5)</td><td>64% (7-4)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (3 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2024-03-10</td><td>18-43</td><td>-4.5</td><td>Cowboys covered</td></tr><tr><td>2023-08-25</td><td>10-34</td><td>-8.5</td><td>Cowboys covered</td></tr><tr><td>2023-04-07</td><td>22-32</td><td>-11.5</td><td>Dolphins covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">North Queensland Cowboys cover rate: <b>67%</b> (2/3) | Dolphins: <b>33%</b> (1/3)</div>
+      <div class="stat-line">$1 on <b>North Queensland Cowboys</b> covering H2H: 2W/3G = <b class="roi-pos">+27.3% ROI</b></div>
+      <div class="stat-line">$1 on <b>Dolphins</b> covering H2H: 1W/3G = <b class="roi-neg">-36.3% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>North Queensland Cowboys</b> covering every game: 8W/13G = <b>62% cover rate</b></div>
+      <div class="stat-line">$1 on <b>Dolphins</b> covering every game: 7W/11G = <b>64% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — North Queensland Cowboys (6 H2H games, best win: +25, worst loss: -54)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 33%</span> | <span>+0.5: 33%</span> | <span>+3.5: 50%</span> | <span>+11.5: 67%</span> | <span>+19.5: 83%</span></div>
+      <div class="sub-title">Line Ceiling — Dolphins (best win: +54, worst loss: -25)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 17%</span> | <span>-15.5: 33%</span> | <span>-9.5: 50%</span> | <span>-1.5: 67%</span> | <span>+0.5: 67%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">DATA SUGGESTS: OVER 48.5 (LEAN) — 2.5 over vs 1.0 under</div>
+      <div class="rec-sub">Consensus: 5 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-under">2026 median 46 UNDER (-3)</span><span class="tot-ind tot-over">H2H median 58 OVER (+9)</span><span class="tot-ind tot-over">H2H overs 83% OVER</span><span class="tot-ind tot-neutral">PF/PA 49 NEUTRAL</span><span class="tot-ind tot-over">2025 median 54 OVER (+6)</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>North Queensland Cowboys</th><th>Dolphins</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>49.6</td><td>48.1</td><td>48.9</td></tr>
+        <tr><td>Median</td><td>46.0</td><td>45.0</td><td><b>45.5</b></td></tr>
+        <tr><td>Over%</td><td>46% (6-7)</td><td>36% (4-7)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: Queensland Country Bank Stadium (0 games)</div>
+      <div class="stat-line">Mean: <b>0.0</b> | Median: <b>0.0</b> | vs line: <b class="roi-neg">-48.5</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">North Queensland Cowboys PF 25.3 / PA 24.3 | Dolphins PF 26.4 / PA 21.7</div>
+      <div class="stat-line">Balanced expected total: <b>48.9</b> vs line: <b class="roi-pos">+0.4</b></div>
+      <div class="sub-title">Matchup Totals History (6 games)</div>
+      <div class="stat-line">Mean: <b>57.0</b> | Median: <b>57.5</b> | Over rate: <b>83%</b> (5/6)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="over"><td>2025-07-17</td><td>43-24</td><td>67</td><td>49.5</td><td>OVER</td></tr><tr class="over"><td>2025-06-14</td><td>4-58</td><td>62</td><td>50.5</td><td>OVER</td></tr><tr class="over"><td>2024-05-04</td><td>26-28</td><td>54</td><td>48.5</td><td>OVER</td></tr><tr class="over"><td>2024-03-10</td><td>18-43</td><td>61</td><td>43.5</td><td>OVER</td></tr><tr class="under"><td>2023-08-25</td><td>10-34</td><td>44</td><td>48.5</td><td>UNDER</td></tr><tr class="over"><td>2023-04-07</td><td>22-32</td><td>54</td><td>42.5</td><td>OVER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 5W/6G = <b class="roi-pos">+59.2% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 1W/6G = <b class="roi-neg">-68.2% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (6 H2H games, max: 67)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U45.5: 17%</span> | <span class="" title="Fair: $5.99">U48.5: 17% <b>$1.90</b></span> | <span>U55.5: 50%</span> | <span>U65.5: 83%</span> | <span>U70.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 44)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O65.5: 17%</span> | <span>O60.5: 50%</span> | <span>O50.5: 83%</span> | <span class="roi-pos" title="Fair: $1.20">O48.5: 83% <b>$1.90</b></span> | <span>O40.5: 100%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">North Queensland Cowboys (predicted: 24.2pts)</div>
+      <div class="stat-line">2026 Home avg: <b>23.0</b> | vs Dolphins: <b>25.5</b> (6G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">Dolphins (predicted: 29.2pts)</div>
+      <div class="stat-line">2026 Away avg: <b>27.0</b> | vs North Queensland Cowboys: <b>31.5</b> (6G)</div>
+      <div class="stat-line">vs North Queensland Cowboys historically: <b>31.5</b> pts (6 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-3" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(3,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(3,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(3,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-3">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-3">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-3">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+    <div class="mp " id="match-4">
+      <div class="match-header">
+        <h2>Brisbane Broncos vs Gold Coast Titans</h2>
+        <div class="match-meta">Sat 6 Jun 7:35pm | Suncorp Stadium</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-multi-only"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Brisbane Broncos @ $1.39</span><span class="sum-conf">MULTI ONLY</span></div><div class="sum-bet sum-strong"><span class="sum-icon">&#9660;</span><span class="sum-market">Total</span><span class="sum-pick">Under 48.5 @ $1.90</span><span class="sum-conf">STRONG</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Brisbane Broncos (LEAN) — 2.8 vs 0.5</div>
+      <div class="rec-sub">Suggested line: Gold Coast Titans +1.5 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-over">2026 form 42% vs 18% HOME</span><span class="tot-ind tot-neutral">2026 margin -5 vs -8 NEUTRAL</span><span class="tot-ind tot-over">2026 H2H 3/3 HOME</span><span class="tot-ind tot-over">2025 margin +7 vs -8 HOME</span><span class="tot-ind tot-neutral">3yr H2H 3/6 NEUTRAL</span><span class="tot-ind tot-neutral">Venue 54% (36/66) NEUTRAL</span><span class="tot-ind tot-over">Market fav $1.39 HOME</span><span class="tot-ind tot-under">H2H ROI +34% (17g) AWAY</span><span class="tot-ind tot-neutral">Fav 29%/Dog 11% NEUTRAL</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">Brisbane Broncos: <b>$1.39</b> (NRL)</span> <span class="odds-chip">Gold Coast Titans: <b>$3.00</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>Brisbane Broncos</th><th>Gold Coast Titans</th></tr>
+        <tr><td>Record</td><td>5-7 (42%)</td><td>2-9 (18%)</td></tr>
+        <tr><td>Home W%</td><td>2-4 (33%)</td><td>1-3 (25%)</td></tr>
+        <tr><td>Away W%</td><td>3-3 (50%)</td><td>1-6 (14%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>21.0/26.1</td><td>17.5/25.5</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Fav:</b> 2-5 (29%)</td><td><b>As Dog:</b> 1-8 (11%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: Suncorp Stadium</div>
+      <div class="stat-line">Brisbane Broncos at Suncorp Stadium: <b>36-30</b> (54%)</div>
+      <div class="stat-line">Gold Coast Titans at Suncorp Stadium: <b>6-10</b> (38%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      <div class='stat-line'>H2H at venue: Brisbane Broncos 3-2 (5 games)</div>
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 7G — Brisbane Broncos 4W, Gold Coast Titans 3W | Avg total: 52.7</div>
+      <div class="stat-line"><b>5yr:</b> 11G — Brisbane Broncos 7W, Gold Coast Titans 4W | Avg total: 51.3</div>
+      <div class="stat-line"><b>All-time:</b> 36G — Brisbane Broncos 25W, Gold Coast Titans 11W | Avg total: 43.7</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-home"><td>2026-04-04</td><td>Gold Coast Titans</td><td>12-26</td><td>Brisbane Broncos</td><td>4.10/1.24</td></tr><tr class="win-home"><td>2025-07-13</td><td>Gold Coast Titans</td><td>14-26</td><td>Brisbane Broncos</td><td>-/-</td></tr><tr class="win-home"><td>2025-06-07</td><td>Brisbane Broncos</td><td>44-14</td><td>Gold Coast Titans</td><td>-/-</td></tr><tr class="win-away"><td>2024-08-03</td><td>Gold Coast Titans</td><td>46-18</td><td>Brisbane Broncos</td><td>-/-</td></tr><tr class="win-away"><td>2024-05-26</td><td>Brisbane Broncos</td><td>34-36</td><td>Gold Coast Titans</td><td>-/-</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>Brisbane Broncos</b> every home game vs Gold Coast Titans: 12W/17G = <b class="roi-pos">+7.9% ROI</b></div>
+      <div class="stat-line">$1 on <b>Gold Coast Titans</b> every away game vs Brisbane Broncos: 5W/17G = <b class="roi-pos">+34.5% ROI</b></div>
+      <div class="stat-line">Brisbane Broncos at Suncorp Stadium (all opponents): 25W/45G = <b class="roi-pos">+5.5% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">Brisbane Broncos +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">Gold Coast Titans +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>Brisbane Broncos</th><th>Gold Coast Titans</th></tr>
+        <tr><td>Cover%</td><td>42% (5-7)</td><td>54% (6-5)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (23 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2026-04-04</td><td>12-26</td><td>-12.5</td><td>Broncos covered</td></tr><tr><td>2023-06-25</td><td>12-18</td><td>-12.5</td><td>Titans covered</td></tr><tr><td>2023-04-15</td><td>26-43</td><td>-8.5</td><td>Broncos covered</td></tr><tr><td>2022-07-16</td><td>12-16</td><td>-5.5</td><td>Titans covered</td></tr><tr><td>2022-05-27</td><td>35-24</td><td>-6.5</td><td>Broncos covered</td></tr><tr><td>2021-04-30</td><td>36-28</td><td>+10.5</td><td>Broncos covered</td></tr><tr><td>2021-03-19</td><td>28-16</td><td>+8.5</td><td>Titans covered</td></tr><tr><td>2020-09-12</td><td>18-6</td><td>+3.5</td><td>Titans covered</td></tr><tr><td>2020-06-27</td><td>12-30</td><td>-6.0</td><td>Titans covered</td></tr><tr><td>2019-07-27</td><td>12-34</td><td>-6.5</td><td>Broncos covered</td></tr><tr><td>2019-06-09</td><td>18-26</td><td>-9.5</td><td>Titans covered</td></tr><tr><td>2018-07-08</td><td>0-34</td><td>-2.5</td><td>Broncos covered</td></tr><tr><td>2018-04-01</td><td>14-26</td><td>-10.5</td><td>Titans covered</td></tr><tr><td>2017-08-05</td><td>0-54</td><td>-7.0</td><td>Broncos covered</td></tr><tr><td>2017-04-14</td><td>24-22</td><td>-14.0</td><td>Titans covered</td></tr><tr><td>2016-09-09</td><td>44-28</td><td>-8.0</td><td>Broncos covered</td></tr><tr><td>2016-04-01</td><td>16-24</td><td>-12.5</td><td>Titans covered</td></tr><tr><td>2015-07-24</td><td>34-0</td><td>-16.0</td><td>Broncos covered</td></tr><tr><td>2015-04-03</td><td>16-26</td><td>-3.5</td><td>Broncos covered</td></tr><tr><td>2014-05-16</td><td>22-8</td><td>-10.0</td><td>Broncos covered</td></tr><tr><td>2014-04-11</td><td>12-8</td><td>-2.0</td><td>Titans covered</td></tr><tr><td>2013-05-17</td><td>32-6</td><td>-2.0</td><td>Broncos covered</td></tr><tr><td>2013-04-05</td><td>12-32</td><td>+5.5</td><td>Broncos covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">Brisbane Broncos cover rate: <b>56%</b> (13/23) | Gold Coast Titans: <b>44%</b> (10/23)</div>
+      <div class="stat-line">$1 on <b>Brisbane Broncos</b> covering H2H: 13W/23G = <b class="roi-pos">+8.0% ROI</b></div>
+      <div class="stat-line">$1 on <b>Gold Coast Titans</b> covering H2H: 10W/23G = <b class="roi-neg">-17.0% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>Brisbane Broncos</b> covering every game: 5W/12G = <b>42% cover rate</b></div>
+      <div class="stat-line">$1 on <b>Gold Coast Titans</b> covering every game: 6W/11G = <b>54% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — Brisbane Broncos (36 H2H games, best win: +54, worst loss: -28)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 28%</span> | <span>-15.5: 33%</span> | <span>-13.5: 44%</span> | <span>-11.5: 47%</span> | <span>-9.5: 53%</span> | <span>-7.5: 61%</span> | <span>-5.5: 64%</span> | <span>-3.5: 67%</span> | <span>-1.5: 69%</span> | <span>+0.5: 69%</span> | <span>+3.5: 72%</span> | <span>+5.5: 78%</span> | <span>+7.5: 81%</span> | <span>+9.5: 83%</span> | <span>+13.5: 92%</span> | <span>+19.5: 97%</span></div>
+      <div class="sub-title">Line Ceiling — Gold Coast Titans (best win: +28, worst loss: -54)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 3%</span> | <span>-15.5: 8%</span> | <span>-11.5: 17%</span> | <span>-7.5: 19%</span> | <span>-5.5: 22%</span> | <span>-3.5: 28%</span> | <span>-1.5: 31%</span> | <span>+0.5: 31%</span> | <span>+3.5: 33%</span> | <span>+5.5: 36%</span> | <span>+7.5: 39%</span> | <span>+9.5: 47%</span> | <span>+11.5: 53%</span> | <span>+13.5: 56%</span> | <span>+15.5: 67%</span> | <span>+19.5: 72%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">DATA SUGGESTS: UNDER 48.5 (STRONG) — 0.0 over vs 3.5 under</div>
+      <div class="rec-sub">Consensus: 6 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-under">2026 median 41 UNDER (-7)</span><span class="tot-ind tot-under">H2H median 42 UNDER (-6)</span><span class="tot-ind tot-neutral">H2H overs 59% NEUTRAL</span><span class="tot-ind tot-under">Venue median 46 UNDER (-2)</span><span class="tot-ind tot-under">PF/PA 45 UNDER (-4)</span><span class="tot-ind tot-neutral">2025 median 48 NEUTRAL</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>Brisbane Broncos</th><th>Gold Coast Titans</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>47.1</td><td>42.9</td><td>45.0</td></tr>
+        <tr><td>Median</td><td>42.5</td><td>40.0</td><td><b>41.2</b></td></tr>
+        <tr><td>Over%</td><td>42% (5-7)</td><td>18% (2-9)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: Suncorp Stadium (163 games)</div>
+      <div class="stat-line">Mean: <b>47.3</b> | Median: <b>46.0</b> | vs line: <b class="roi-neg">-2.5</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">Brisbane Broncos PF 21.0 / PA 26.1 | Gold Coast Titans PF 17.5 / PA 25.5</div>
+      <div class="stat-line">Balanced expected total: <b>45.0</b> vs line: <b class="roi-neg">-3.5</b></div>
+      <div class="sub-title">Matchup Totals History (27 games)</div>
+      <div class="stat-line">Mean: <b>45.0</b> | Median: <b>42.0</b> | Over rate: <b>59%</b> (16/27)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="under"><td>2026-04-04</td><td>12-26</td><td>38</td><td>51.5</td><td>UNDER</td></tr><tr class="under"><td>2025-07-13</td><td>14-26</td><td>40</td><td>50.5</td><td>UNDER</td></tr><tr class="over"><td>2025-06-07</td><td>44-14</td><td>58</td><td>50.5</td><td>OVER</td></tr><tr class="over"><td>2024-08-03</td><td>46-18</td><td>64</td><td>52.5</td><td>OVER</td></tr><tr class="over"><td>2024-05-26</td><td>34-36</td><td>70</td><td>50.5</td><td>OVER</td></tr><tr class="under"><td>2023-06-25</td><td>12-18</td><td>30</td><td>51.5</td><td>UNDER</td></tr><tr class="over"><td>2023-04-15</td><td>26-43</td><td>69</td><td>46.5</td><td>OVER</td></tr><tr class="under"><td>2022-07-16</td><td>12-16</td><td>28</td><td>44.5</td><td>UNDER</td></tr><tr class="over"><td>2022-05-27</td><td>35-24</td><td>59</td><td>41.5</td><td>OVER</td></tr><tr class="over"><td>2021-04-30</td><td>36-28</td><td>64</td><td>42.5</td><td>OVER</td></tr><tr class="over"><td>2021-03-19</td><td>28-16</td><td>44</td><td>40.5</td><td>OVER</td></tr><tr class="under"><td>2020-09-12</td><td>18-6</td><td>24</td><td>46.5</td><td>UNDER</td></tr><tr class="over"><td>2020-06-27</td><td>12-30</td><td>42</td><td>41.5</td><td>OVER</td></tr><tr class="over"><td>2019-07-27</td><td>12-34</td><td>46</td><td>40.5</td><td>OVER</td></tr><tr class="over"><td>2019-06-09</td><td>18-26</td><td>44</td><td>42.5</td><td>OVER</td></tr><tr class="under"><td>2018-07-08</td><td>0-34</td><td>34</td><td>43.5</td><td>UNDER</td></tr><tr class="under"><td>2018-04-01</td><td>14-26</td><td>40</td><td>44.0</td><td>UNDER</td></tr><tr class="over"><td>2017-08-05</td><td>0-54</td><td>54</td><td>42.0</td><td>OVER</td></tr><tr class="over"><td>2017-04-14</td><td>24-22</td><td>46</td><td>44.5</td><td>OVER</td></tr><tr class="over"><td>2016-09-09</td><td>44-28</td><td>72</td><td>36.5</td><td>OVER</td></tr><tr class="under"><td>2016-04-01</td><td>16-24</td><td>40</td><td>41.5</td><td>UNDER</td></tr><tr class="under"><td>2015-07-24</td><td>34-0</td><td>34</td><td>44.0</td><td>UNDER</td></tr><tr class="over"><td>2015-04-03</td><td>16-26</td><td>42</td><td>36.5</td><td>OVER</td></tr><tr class="under"><td>2014-05-16</td><td>22-8</td><td>30</td><td>39.5</td><td>UNDER</td></tr><tr class="under"><td>2014-04-11</td><td>12-8</td><td>20</td><td>40.5</td><td>UNDER</td></tr><tr class="over"><td>2013-05-17</td><td>32-6</td><td>38</td><td>36.5</td><td>OVER</td></tr><tr class="over"><td>2013-04-05</td><td>12-32</td><td>44</td><td>34.5</td><td>OVER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 16W/27G = <b class="roi-pos">+13.2% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 11W/27G = <b class="roi-neg">-22.2% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (36 H2H games, max: 72)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U25.5: 11%</span> | <span>U30.5: 19%</span> | <span>U35.5: 33%</span> | <span>U40.5: 50%</span> | <span>U45.5: 64%</span> | <span class="roi-pos" title="Fair: $1.44">U48.5: 69% <b>$1.90</b></span> | <span>U50.5: 72%</span> | <span>U55.5: 78%</span> | <span>U60.5: 83%</span> | <span>U65.5: 89%</span> | <span>U70.5: 94%</span> | <span>U75.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 20)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O70.5: 6%</span> | <span>O65.5: 11%</span> | <span>O60.5: 17%</span> | <span>O55.5: 22%</span> | <span>O50.5: 28%</span> | <span class="" title="Fair: $3.27">O48.5: 31% <b>$1.90</b></span> | <span>O45.5: 36%</span> | <span>O40.5: 50%</span> | <span>O35.5: 67%</span> | <span>O30.5: 81%</span> | <span>O25.5: 89%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">Brisbane Broncos (predicted: 30.2pts)</div>
+      <div class="stat-line">2026 Home avg: <b>34.0</b> | vs Gold Coast Titans: <b>26.3</b> (36G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">Gold Coast Titans (predicted: 19.4pts)</div>
+      <div class="stat-line">2026 Away avg: <b>21.4</b> | vs Brisbane Broncos: <b>17.4</b> (36G)</div>
+      <div class="stat-line">vs Brisbane Broncos historically: <b>17.4</b> pts (36 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-4" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(4,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(4,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(4,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-4">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-4">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-4">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+    <div class="mp " id="match-5">
+      <div class="match-header">
+        <h2>Wests Tigers vs Penrith Panthers</h2>
+        <div class="match-meta">Sun 7 Jun 2:00pm | CommBank Stadium</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-multi-only"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Penrith Panthers @ $1.23</span><span class="sum-conf">MULTI ONLY</span></div><div class="sum-bet sum-strong"><span class="sum-icon">&#9660;</span><span class="sum-market">Total</span><span class="sum-pick">Under 48.5 @ $1.90</span><span class="sum-conf">STRONG</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Penrith Panthers (STRONG) — 0.0 vs 4.8</div>
+      <div class="rec-sub">Suggested line: Wests Tigers +9.0 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-under">2026 form 92% vs 54% AWAY</span><span class="tot-ind tot-under">2026 margin +17 vs -1 AWAY</span><span class="tot-ind tot-under">2026 H2H 2/2 AWAY</span><span class="tot-ind tot-under">2025 margin +5 vs -6 AWAY</span><span class="tot-ind tot-under">3yr H2H 3/4 (75%) AWAY</span><span class="tot-ind tot-neutral">Venue 36% (5/14) NEUTRAL</span><span class="tot-ind tot-under">Market fav $1.23 AWAY</span><span class="tot-ind tot-neutral">H2H ROI home -9%/away -2% NEUTRAL</span><span class="tot-ind tot-under">As fav 91% (11g) AWAY</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">Wests Tigers: <b>$4.20</b> (NRL)</span> <span class="odds-chip">Penrith Panthers: <b>$1.23</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>Wests Tigers</th><th>Penrith Panthers</th></tr>
+        <tr><td>Record</td><td>6-5 (54%)</td><td>11-1 (92%)</td></tr>
+        <tr><td>Home W%</td><td>4-2 (67%)</td><td>6-0 (100%)</td></tr>
+        <tr><td>Away W%</td><td>2-3 (40%)</td><td>5-1 (83%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>25.0/25.9</td><td>30.8/13.7</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Dog:</b> 2-4 (33%)</td><td><b>As Fav:</b> 10-1 (91%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: CommBank Stadium</div>
+      <div class="stat-line">Wests Tigers at CommBank Stadium: <b>5-9</b> (36%)</div>
+      <div class="stat-line">Penrith Panthers at CommBank Stadium: <b>14-6</b> (70%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      <div class='stat-line'>H2H at venue: Wests Tigers 0-2 (2 games)</div>
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 4G — Wests Tigers 1W, Penrith Panthers 3W | Avg total: 29.5</div>
+      <div class="stat-line"><b>5yr:</b> 7G — Wests Tigers 2W, Penrith Panthers 5W | Avg total: 32.9</div>
+      <div class="stat-line"><b>All-time:</b> 28G — Wests Tigers 11W, Penrith Panthers 17W | Avg total: 38.9</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-away"><td>2025-07-26</td><td>Penrith Panthers</td><td>36-2</td><td>Wests Tigers</td><td>-/-</td></tr><tr class="win-away"><td>2025-06-08</td><td>Wests Tigers</td><td>14-18</td><td>Penrith Panthers</td><td>-/-</td></tr><tr class="win-away"><td>2024-04-20</td><td>Penrith Panthers</td><td>22-6</td><td>Wests Tigers</td><td>1.18/5.00</td></tr><tr class="win-home"><td>2023-04-29</td><td>Penrith Panthers</td><td>8-12</td><td>Wests Tigers</td><td>1.09/8.00</td></tr><tr class="win-away"><td>2022-07-17</td><td>Wests Tigers</td><td>16-18</td><td>Penrith Panthers</td><td>3.10/1.40</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>Wests Tigers</b> every home game vs Penrith Panthers: 7W/14G = <b class="roi-neg">-8.7% ROI</b></div>
+      <div class="stat-line">$1 on <b>Penrith Panthers</b> every away game vs Wests Tigers: 7W/14G = <b class="roi-neg">-1.9% ROI</b></div>
+      <div class="stat-line">Wests Tigers at CommBank Stadium (all opponents): 4W/11G = <b class="roi-neg">-17.7% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">Wests Tigers +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">Penrith Panthers +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>Wests Tigers</th><th>Penrith Panthers</th></tr>
+        <tr><td>Cover%</td><td>64% (7-4)</td><td>67% (8-4)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (18 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2024-04-20</td><td>22-6</td><td>+14.5</td><td>Panthers covered</td></tr><tr><td>2023-04-29</td><td>8-12</td><td>+17.5</td><td>Tigers covered</td></tr><tr><td>2022-07-17</td><td>16-18</td><td>+7.5</td><td>Tigers covered</td></tr><tr><td>2021-08-29</td><td>30-16</td><td>+29.5</td><td>Tigers covered</td></tr><tr><td>2021-06-04</td><td>26-6</td><td>+6.5</td><td>Tigers covered</td></tr><tr><td>2020-08-29</td><td>30-6</td><td>+11.5</td><td>Panthers covered</td></tr><tr><td>2020-07-04</td><td>12-19</td><td>+4.5</td><td>Panthers covered</td></tr><tr><td>2019-05-10</td><td>30-4</td><td>-1.5</td><td>Tigers covered</td></tr><tr><td>2019-04-05</td><td>9-8</td><td>+4.5</td><td>Tigers covered</td></tr><tr><td>2018-05-17</td><td>16-2</td><td>+4.5</td><td>Panthers covered</td></tr><tr><td>2017-08-06</td><td>28-14</td><td>+7.5</td><td>Panthers covered</td></tr><tr><td>2017-03-12</td><td>2-36</td><td>+2.5</td><td>Panthers covered</td></tr><tr><td>2016-08-19</td><td>40-10</td><td>+7.5</td><td>Panthers covered</td></tr><tr><td>2016-07-02</td><td>34-26</td><td>+2.5</td><td>Tigers covered</td></tr><tr><td>2015-06-28</td><td>12-35</td><td>-5.0</td><td>Panthers covered</td></tr><tr><td>2014-07-06</td><td>10-26</td><td>+8.5</td><td>Panthers covered</td></tr><tr><td>2013-06-09</td><td>18-20</td><td>+12.0</td><td>Tigers covered</td></tr><tr><td>2013-03-17</td><td>28-18</td><td>-3.5</td><td>Tigers covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">Wests Tigers cover rate: <b>50%</b> (9/18) | Penrith Panthers: <b>50%</b> (9/18)</div>
+      <div class="stat-line">$1 on <b>Wests Tigers</b> covering H2H: 9W/18G = <b class="roi-neg">-4.5% ROI</b></div>
+      <div class="stat-line">$1 on <b>Penrith Panthers</b> covering H2H: 9W/18G = <b class="roi-neg">-4.5% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>Wests Tigers</b> covering every game: 7W/11G = <b>64% cover rate</b></div>
+      <div class="stat-line">$1 on <b>Penrith Panthers</b> covering every game: 8W/12G = <b>67% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — Wests Tigers (28 H2H games, best win: +30, worst loss: -34)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 14%</span> | <span>-13.5: 18%</span> | <span>-9.5: 21%</span> | <span>-7.5: 29%</span> | <span>-3.5: 32%</span> | <span>-1.5: 39%</span> | <span>+0.5: 39%</span> | <span>+1.5: 43%</span> | <span>+3.5: 46%</span> | <span>+5.5: 50%</span> | <span>+7.5: 54%</span> | <span>+9.5: 57%</span> | <span>+15.5: 68%</span> | <span>+19.5: 79%</span></div>
+      <div class="sub-title">Line Ceiling — Penrith Panthers (best win: +34, worst loss: -30)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 21%</span> | <span>-15.5: 32%</span> | <span>-13.5: 43%</span> | <span>-7.5: 46%</span> | <span>-5.5: 50%</span> | <span>-3.5: 54%</span> | <span>-1.5: 57%</span> | <span>-0.5: 61%</span> | <span>+0.5: 61%</span> | <span>+3.5: 68%</span> | <span>+5.5: 71%</span> | <span>+9.5: 79%</span> | <span>+11.5: 82%</span> | <span>+15.5: 86%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">DATA SUGGESTS: UNDER 48.5 (STRONG) — 0.0 over vs 4.0 under</div>
+      <div class="rec-sub">Consensus: 6 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-under">2026 median 46 UNDER (-3)</span><span class="tot-ind tot-under">H2H median 36 UNDER (-12)</span><span class="tot-ind tot-under">H2H overs 20% UNDER</span><span class="tot-ind tot-under">Venue median 44 UNDER (-4)</span><span class="tot-ind tot-neutral">PF/PA 48 NEUTRAL</span><span class="tot-ind tot-under">2025 median 41 UNDER (-8)</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>Wests Tigers</th><th>Penrith Panthers</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>50.9</td><td>44.4</td><td>47.7</td></tr>
+        <tr><td>Median</td><td>47.0</td><td>44.5</td><td><b>45.8</b></td></tr>
+        <tr><td>Over%</td><td>46% (5-6)</td><td>33% (4-8)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: CommBank Stadium (91 games)</div>
+      <div class="stat-line">Mean: <b>44.6</b> | Median: <b>44.0</b> | vs line: <b class="roi-neg">-4.5</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">Wests Tigers PF 25.0 / PA 25.9 | Penrith Panthers PF 30.8 / PA 13.7</div>
+      <div class="stat-line">Balanced expected total: <b>47.7</b> vs line: <b class="roi-neg">-0.8</b></div>
+      <div class="sub-title">Matchup Totals History (20 games)</div>
+      <div class="stat-line">Mean: <b>36.1</b> | Median: <b>36.0</b> | Over rate: <b>20%</b> (4/20)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="under"><td>2025-07-26</td><td>36-2</td><td>38</td><td>47.5</td><td>UNDER</td></tr><tr class="under"><td>2025-06-08</td><td>14-18</td><td>32</td><td>46.5</td><td>UNDER</td></tr><tr class="under"><td>2024-04-20</td><td>22-6</td><td>28</td><td>41.5</td><td>UNDER</td></tr><tr class="under"><td>2023-04-29</td><td>8-12</td><td>20</td><td>39.5</td><td>UNDER</td></tr><tr class="under"><td>2022-07-17</td><td>16-18</td><td>34</td><td>42.5</td><td>UNDER</td></tr><tr class="under"><td>2021-08-29</td><td>30-16</td><td>46</td><td>49.5</td><td>UNDER</td></tr><tr class="under"><td>2021-06-04</td><td>26-6</td><td>32</td><td>48.5</td><td>UNDER</td></tr><tr class="under"><td>2020-08-29</td><td>30-6</td><td>36</td><td>41.5</td><td>UNDER</td></tr><tr class="under"><td>2020-07-04</td><td>12-19</td><td>31</td><td>36.5</td><td>UNDER</td></tr><tr class="under"><td>2019-05-10</td><td>30-4</td><td>34</td><td>37.5</td><td>UNDER</td></tr><tr class="under"><td>2019-04-05</td><td>9-8</td><td>17</td><td>36.5</td><td>UNDER</td></tr><tr class="under"><td>2018-05-17</td><td>16-2</td><td>18</td><td>39.5</td><td>UNDER</td></tr><tr class="under"><td>2017-08-06</td><td>28-14</td><td>42</td><td>42.0</td><td>UNDER</td></tr><tr class="under"><td>2017-03-12</td><td>2-36</td><td>38</td><td>47.5</td><td>UNDER</td></tr><tr class="over"><td>2016-08-19</td><td>40-10</td><td>50</td><td>42.5</td><td>OVER</td></tr><tr class="over"><td>2016-07-02</td><td>34-26</td><td>60</td><td>46.0</td><td>OVER</td></tr><tr class="over"><td>2015-06-28</td><td>12-35</td><td>47</td><td>42.0</td><td>OVER</td></tr><tr class="under"><td>2014-07-06</td><td>10-26</td><td>36</td><td>44.0</td><td>UNDER</td></tr><tr class="under"><td>2013-06-09</td><td>18-20</td><td>38</td><td>44.5</td><td>UNDER</td></tr><tr class="over"><td>2013-03-17</td><td>28-18</td><td>46</td><td>43.5</td><td>OVER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 4W/20G = <b class="roi-neg">-61.8% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 16W/20G = <b class="roi-pos">+52.8% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (28 H2H games, max: 64)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U25.5: 11%</span> | <span>U30.5: 18%</span> | <span>U35.5: 36%</span> | <span>U40.5: 61%</span> | <span>U45.5: 71%</span> | <span class="roi-pos" title="Fair: $1.22">U48.5: 82% <b>$1.90</b></span> | <span>U50.5: 89%</span> | <span>U60.5: 93%</span> | <span>U65.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 17)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O60.5: 7%</span> | <span>O55.5: 11%</span> | <span class="" title="Fair: $5.59">O48.5: 18% <b>$1.90</b></span> | <span>O45.5: 29%</span> | <span>O40.5: 39%</span> | <span>O35.5: 64%</span> | <span>O30.5: 82%</span> | <span>O25.5: 89%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">Wests Tigers (predicted: 18.4pts)</div>
+      <div class="stat-line">2026 Home avg: <b>19.5</b> | vs Penrith Panthers: <b>17.2</b> (28G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">Penrith Panthers (predicted: 24.9pts)</div>
+      <div class="stat-line">2026 Away avg: <b>28.0</b> | vs Wests Tigers: <b>21.8</b> (28G)</div>
+      <div class="stat-line">vs Wests Tigers historically: <b>21.8</b> pts (28 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-5" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(5,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(5,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(5,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-5">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-5">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-5">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+    <div class="mp " id="match-6">
+      <div class="match-header">
+        <h2>Cronulla Sharks vs St. George Illawarra Dragons</h2>
+        <div class="match-meta">Sun 7 Jun 4:05pm | Ocean Protect Stadium</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-multi-only"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Cronulla Sharks @ $1.32</span><span class="sum-conf">MULTI ONLY</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Cronulla Sharks (STRONG) — 3.8 vs 0.0</div>
+      <div class="rec-sub">Suggested line: St. George Illawarra Dragons +11.0 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-over">2026 form 54% vs 8% HOME</span><span class="tot-ind tot-over">2026 margin +4 vs -18 HOME</span><span class="tot-ind tot-neutral">2026 H2H 1/2 NEUTRAL</span><span class="tot-ind tot-over">2025 margin +5 vs -5 HOME</span><span class="tot-ind tot-over">3yr H2H 5/6 (83%) HOME</span><span class="tot-ind tot-over">Venue 73% (35/48) HOME</span><span class="tot-ind tot-over">Market fav $1.32 HOME</span><span class="tot-ind tot-neutral">H2H ROI home +0%/away -35% NEUTRAL</span><span class="tot-ind tot-neutral">Fav 62%/Dog 8% NEUTRAL</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">Cronulla Sharks: <b>$1.32</b> (NRL)</span> <span class="odds-chip">St. George Illawarra Dragons: <b>$3.40</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>Cronulla Sharks</th><th>St. George Illawarra Dragons</th></tr>
+        <tr><td>Record</td><td>6-5 (54%)</td><td>1-11 (8%)</td></tr>
+        <tr><td>Home W%</td><td>5-2 (71%)</td><td>0-6 (0%)</td></tr>
+        <tr><td>Away W%</td><td>1-3 (25%)</td><td>1-5 (17%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>29.3/25.6</td><td>14.3/32.8</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Fav:</b> 5-3 (62%)</td><td><b>As Dog:</b> 1-11 (8%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: Ocean Protect Stadium</div>
+      <div class="stat-line">Cronulla Sharks at Ocean Protect Stadium: <b>35-13</b> (73%)</div>
+      <div class="stat-line">St. George Illawarra Dragons at Ocean Protect Stadium: <b>0-4</b> (0%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      <div class='stat-line'>H2H at venue: Cronulla Sharks 4-0 (4 games)</div>
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 6G — Cronulla Sharks 5W, St. George Illawarra Dragons 1W | Avg total: 46.3</div>
+      <div class="stat-line"><b>5yr:</b> 10G — Cronulla Sharks 9W, St. George Illawarra Dragons 1W | Avg total: 44.3</div>
+      <div class="stat-line"><b>All-time:</b> 24G — Cronulla Sharks 15W, St. George Illawarra Dragons 9W | Avg total: 40.8</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-away"><td>2025-08-09</td><td>St. George Illawarra Dragons</td><td>22-14</td><td>Cronulla Sharks</td><td>-/-</td></tr><tr class="win-home"><td>2025-06-12</td><td>Cronulla Sharks</td><td>30-18</td><td>St. George Illawarra Dragons</td><td>-/-</td></tr><tr class="win-home"><td>2024-08-25</td><td>St. George Illawarra Dragons</td><td>10-38</td><td>Cronulla Sharks</td><td>-/-</td></tr><tr class="win-home"><td>2024-05-05</td><td>Cronulla Sharks</td><td>20-10</td><td>St. George Illawarra Dragons</td><td>-/-</td></tr><tr class="win-home"><td>2023-06-29</td><td>Cronulla Sharks</td><td>52-16</td><td>St. George Illawarra Dragons</td><td>1.11/6.75</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>Cronulla Sharks</b> every home game vs St. George Illawarra Dragons: 9W/12G = <b class="roi-pos">+0.4% ROI</b></div>
+      <div class="stat-line">$1 on <b>St. George Illawarra Dragons</b> every away game vs Cronulla Sharks: 3W/12G = <b class="roi-neg">-35.1% ROI</b></div>
+      <div class="stat-line">Cronulla Sharks at Ocean Protect Stadium (all opponents): 22W/30G = <b class="roi-pos">+10.3% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">Cronulla Sharks +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">St. George Illawarra Dragons +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>Cronulla Sharks</th><th>St. George Illawarra Dragons</th></tr>
+        <tr><td>Cover%</td><td>54% (6-5)</td><td>25% (3-9)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (20 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2023-06-29</td><td>52-16</td><td>-18.5</td><td>Sharks covered</td></tr><tr><td>2023-03-26</td><td>8-40</td><td>-6.5</td><td>Sharks covered</td></tr><tr><td>2022-08-06</td><td>24-18</td><td>-10.5</td><td>Dragons covered</td></tr><tr><td>2022-03-24</td><td>12-36</td><td>-2.5</td><td>Sharks covered</td></tr><tr><td>2021-05-21</td><td>13-12</td><td>-7.5</td><td>Dragons covered</td></tr><tr><td>2021-03-14</td><td>18-32</td><td>-2.5</td><td>Sharks covered</td></tr><tr><td>2020-07-25</td><td>28-24</td><td>-1.5</td><td>Sharks covered</td></tr><tr><td>2020-06-14</td><td>30-16</td><td>-5.5</td><td>Dragons covered</td></tr><tr><td>2019-08-18</td><td>18-12</td><td>-8.0</td><td>Dragons covered</td></tr><tr><td>2019-05-26</td><td>9-22</td><td>+1.5</td><td>Sharks covered</td></tr><tr><td>2018-04-13</td><td>40-20</td><td>+6.0</td><td>Dragons covered</td></tr><tr><td>2018-03-15</td><td>16-20</td><td>+2.5</td><td>Dragons covered</td></tr><tr><td>2017-05-12</td><td>14-18</td><td>-6.0</td><td>Dragons covered</td></tr><tr><td>2017-03-19</td><td>10-16</td><td>-8.0</td><td>Dragons covered</td></tr><tr><td>2016-08-13</td><td>32-18</td><td>-9.0</td><td>Dragons covered</td></tr><tr><td>2016-03-13</td><td>30-2</td><td>-4.0</td><td>Sharks covered</td></tr><tr><td>2015-07-12</td><td>28-8</td><td>-10.0</td><td>Sharks covered</td></tr><tr><td>2015-05-31</td><td>42-6</td><td>+8.0</td><td>Dragons covered</td></tr><tr><td>2014-06-07</td><td>30-0</td><td>+8.5</td><td>Dragons covered</td></tr><tr><td>2014-03-22</td><td>12-14</td><td>+4.5</td><td>Sharks covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">Cronulla Sharks cover rate: <b>45%</b> (9/20) | St. George Illawarra Dragons: <b>55%</b> (11/20)</div>
+      <div class="stat-line">$1 on <b>Cronulla Sharks</b> covering H2H: 9W/20G = <b class="roi-neg">-14.0% ROI</b></div>
+      <div class="stat-line">$1 on <b>St. George Illawarra Dragons</b> covering H2H: 11W/20G = <b class="roi-pos">+5.1% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>Cronulla Sharks</b> covering every game: 6W/11G = <b>54% cover rate</b></div>
+      <div class="stat-line">$1 on <b>St. George Illawarra Dragons</b> covering every game: 3W/12G = <b>25% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — Cronulla Sharks (24 H2H games, best win: +36, worst loss: -36)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 25%</span> | <span>-13.5: 29%</span> | <span>-11.5: 38%</span> | <span>-9.5: 42%</span> | <span>-5.5: 50%</span> | <span>-3.5: 58%</span> | <span>-0.5: 62%</span> | <span>+0.5: 62%</span> | <span>+3.5: 67%</span> | <span>+5.5: 71%</span> | <span>+7.5: 75%</span> | <span>+9.5: 79%</span> | <span>+15.5: 88%</span></div>
+      <div class="sub-title">Line Ceiling — St. George Illawarra Dragons (best win: +36, worst loss: -36)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 12%</span> | <span>-13.5: 21%</span> | <span>-7.5: 25%</span> | <span>-5.5: 29%</span> | <span>-3.5: 33%</span> | <span>-1.5: 38%</span> | <span>+0.5: 38%</span> | <span>+1.5: 42%</span> | <span>+5.5: 50%</span> | <span>+7.5: 58%</span> | <span>+11.5: 62%</span> | <span>+13.5: 71%</span> | <span>+15.5: 75%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">MARGINAL: Split signal on 48.5 — 1.0 over vs 1.0 under</div>
+      <div class="rec-sub">Consensus: 6 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-neutral">2026 median 50 NEUTRAL</span><span class="tot-ind tot-under">H2H median 39 UNDER (-10)</span><span class="tot-ind tot-neutral">H2H overs 46% NEUTRAL</span><span class="tot-ind tot-neutral">Venue median 46 NEUTRAL</span><span class="tot-ind tot-over">PF/PA 51 OVER (+2)</span><span class="tot-ind tot-neutral">2025 median 46 NEUTRAL</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>Cronulla Sharks</th><th>St. George Illawarra Dragons</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>54.9</td><td>47.1</td><td>51.0</td></tr>
+        <tr><td>Median</td><td>56.0</td><td>44.0</td><td><b>50.0</b></td></tr>
+        <tr><td>Over%</td><td>73% (8-3)</td><td>33% (4-8)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: Ocean Protect Stadium (48 games)</div>
+      <div class="stat-line">Mean: <b>45.2</b> | Median: <b>46.5</b> | vs line: <b class="roi-neg">-2.0</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">Cronulla Sharks PF 29.3 / PA 25.6 | St. George Illawarra Dragons PF 14.3 / PA 32.8</div>
+      <div class="stat-line">Balanced expected total: <b>51.0</b> vs line: <b class="roi-pos">+2.5</b></div>
+      <div class="sub-title">Matchup Totals History (24 games)</div>
+      <div class="stat-line">Mean: <b>40.8</b> | Median: <b>39.0</b> | Over rate: <b>46%</b> (11/24)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="under"><td>2025-08-09</td><td>22-14</td><td>36</td><td>45.5</td><td>UNDER</td></tr><tr class="over"><td>2025-06-12</td><td>30-18</td><td>48</td><td>47.5</td><td>OVER</td></tr><tr class="over"><td>2024-08-25</td><td>10-38</td><td>48</td><td>47.5</td><td>OVER</td></tr><tr class="under"><td>2024-05-05</td><td>20-10</td><td>30</td><td>41.5</td><td>UNDER</td></tr><tr class="over"><td>2023-06-29</td><td>52-16</td><td>68</td><td>45.5</td><td>OVER</td></tr><tr class="over"><td>2023-03-26</td><td>8-40</td><td>48</td><td>43.5</td><td>OVER</td></tr><tr class="under"><td>2022-08-06</td><td>24-18</td><td>42</td><td>42.5</td><td>UNDER</td></tr><tr class="over"><td>2022-03-24</td><td>12-36</td><td>48</td><td>34.5</td><td>OVER</td></tr><tr class="under"><td>2021-05-21</td><td>13-12</td><td>25</td><td>46.5</td><td>UNDER</td></tr><tr class="over"><td>2021-03-14</td><td>18-32</td><td>50</td><td>40.5</td><td>OVER</td></tr><tr class="over"><td>2020-07-25</td><td>28-24</td><td>52</td><td>39.5</td><td>OVER</td></tr><tr class="over"><td>2020-06-14</td><td>30-16</td><td>46</td><td>38.5</td><td>OVER</td></tr><tr class="under"><td>2019-08-18</td><td>18-12</td><td>30</td><td>40.5</td><td>UNDER</td></tr><tr class="under"><td>2019-05-26</td><td>9-22</td><td>31</td><td>38.5</td><td>UNDER</td></tr><tr class="over"><td>2018-04-13</td><td>40-20</td><td>60</td><td>35.5</td><td>OVER</td></tr><tr class="under"><td>2018-03-15</td><td>16-20</td><td>36</td><td>37.0</td><td>UNDER</td></tr><tr class="under"><td>2017-05-12</td><td>14-18</td><td>32</td><td>36.0</td><td>UNDER</td></tr><tr class="under"><td>2017-03-19</td><td>10-16</td><td>26</td><td>39.0</td><td>UNDER</td></tr><tr class="over"><td>2016-08-13</td><td>32-18</td><td>50</td><td>38.0</td><td>OVER</td></tr><tr class="under"><td>2016-03-13</td><td>30-2</td><td>32</td><td>38.0</td><td>UNDER</td></tr><tr class="under"><td>2015-07-12</td><td>28-8</td><td>36</td><td>38.0</td><td>UNDER</td></tr><tr class="over"><td>2015-05-31</td><td>42-6</td><td>48</td><td>36.5</td><td>OVER</td></tr><tr class="under"><td>2014-06-07</td><td>30-0</td><td>30</td><td>38.5</td><td>UNDER</td></tr><tr class="under"><td>2014-03-22</td><td>12-14</td><td>26</td><td>40.5</td><td>UNDER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 11W/24G = <b class="roi-neg">-12.5% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 13W/24G = <b class="roi-pos">+3.5% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (24 H2H games, max: 68)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U25.5: 4%</span> | <span>U30.5: 25%</span> | <span>U35.5: 38%</span> | <span>U40.5: 50%</span> | <span>U45.5: 54%</span> | <span class="roi-pos" title="Fair: $1.26">U48.5: 79% <b>$1.90</b></span> | <span>U50.5: 88%</span> | <span>U55.5: 92%</span> | <span>U60.5: 96%</span> | <span>U70.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 25)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O65.5: 4%</span> | <span>O55.5: 8%</span> | <span>O50.5: 12%</span> | <span class="" title="Fair: $4.81">O48.5: 21% <b>$1.90</b></span> | <span>O45.5: 46%</span> | <span>O40.5: 50%</span> | <span>O35.5: 62%</span> | <span>O30.5: 75%</span> | <span>O25.5: 96%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">Cronulla Sharks (predicted: 23.4pts)</div>
+      <div class="stat-line">2026 Home avg: <b>24.3</b> | vs St. George Illawarra Dragons: <b>22.5</b> (24G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">St. George Illawarra Dragons (predicted: 19.9pts)</div>
+      <div class="stat-line">2026 Away avg: <b>21.6</b> | vs Cronulla Sharks: <b>18.2</b> (24G)</div>
+      <div class="stat-line">vs Cronulla Sharks historically: <b>18.2</b> pts (24 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-6" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(6,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(6,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(6,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-6">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-6">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-6">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+    <div class="mp " id="match-7">
+      <div class="match-header">
+        <h2>Canterbury Bulldogs vs Parramatta Eels</h2>
+        <div class="match-meta">Mon 8 Jun 4:05pm | Accor Stadium</div>
+      </div>
+      <div class="bets-summary">
+      <div class="sum-title">Suggested Bets</div>
+      <div class="sum-grid"><div class="sum-bet sum-lean"><span class="sum-icon">&#9654;</span><span class="sum-market">H2H</span><span class="sum-pick">Canterbury Bulldogs @ $1.48</span><span class="sum-conf">LEAN</span></div><div class="sum-bet sum-strong"><span class="sum-icon">&#9660;</span><span class="sum-market">Total</span><span class="sum-pick">Under 48.5 @ $1.90</span><span class="sum-conf">STRONG</span></div></div>
+      
+      
+    </div>
+      <div class="grid-2x2">
+        
+    <div class="bubble">
+      <div class="bubble-title">H2H Analysis</div>
+      <div class="rec">DATA SUGGESTS: Canterbury Bulldogs (LEAN) — 2.8 vs 0.5</div>
+      <div class="rec-sub">Suggested line: Parramatta Eels +2.1 (based on 2026 margin gap)</div>
+      <div class="sub-title">Indicator Consensus</div>
+      <div class="tot-indicators"><span class="tot-ind tot-neutral">2026 form 33% vs 33% NEUTRAL</span><span class="tot-ind tot-over">2026 margin -8 vs -12 HOME</span><span class="tot-ind tot-over">2026 H2H 2/3 HOME</span><span class="tot-ind tot-over">2025 margin +4 vs -3 HOME</span><span class="tot-ind tot-neutral">3yr H2H 3/6 NEUTRAL</span><span class="tot-ind tot-neutral">Venue 54% (22/41) NEUTRAL</span><span class="tot-ind tot-over">Market fav $1.48 HOME</span><span class="tot-ind tot-under">H2H ROI +19% (12g) AWAY</span><span class="tot-ind tot-neutral">Fav 33%/Dog 33% NEUTRAL</span></div>
+      <div class="sub-title">Best Odds</div>
+      <div class="odds-row"><span class="odds-chip">Canterbury Bulldogs: <b>$1.48</b> (NRL)</span> <span class="odds-chip">Parramatta Eels: <b>$2.67</b> (NRL)</span> </div>
+      <div class="sub-title">2026 Season Form</div>
+      <table class="stats-tbl"><tr><th></th><th>Canterbury Bulldogs</th><th>Parramatta Eels</th></tr>
+        <tr><td>Record</td><td>4-8 (33%)</td><td>4-8 (33%)</td></tr>
+        <tr><td>Home W%</td><td>3-2 (60%)</td><td>2-4 (33%)</td></tr>
+        <tr><td>Away W%</td><td>1-6 (14%)</td><td>2-4 (33%)</td></tr>
+        <tr><td>Avg PF/PA</td><td>18.2/26.5</td><td>21.4/33.9</td></tr>
+        <tr><td>Fav/Dog</td><td><b>As Fav:</b> 2-4 (33%)</td><td><b>As Dog:</b> 3-6 (33%)</td></tr>
+      </table>
+      <div class="sub-title">Venue: Accor Stadium</div>
+      <div class="stat-line">Canterbury Bulldogs at Accor Stadium: <b>22-19</b> (54%)</div>
+      <div class="stat-line">Parramatta Eels at Accor Stadium: <b>3-7</b> (30%) <span style="color:#6b7280;font-size:10px">(all games)</span></div>
+      <div class='stat-line'>H2H at venue: Canterbury Bulldogs 3-2 (5 games)</div>
+      <div class="sub-title">H2H Matchup History</div>
+      <div class="stat-line"><b>3yr:</b> 7G — Canterbury Bulldogs 3W, Parramatta Eels 4W | Avg total: 39.7</div>
+      <div class="stat-line"><b>5yr:</b> 11G — Canterbury Bulldogs 4W, Parramatta Eels 7W | Avg total: 41.1</div>
+      <div class="stat-line"><b>All-time:</b> 25G — Canterbury Bulldogs 9W, Parramatta Eels 16W | Avg total: 34.8</div>
+      <div class="sub-title">Last 5 Matchups</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Home</th><th>Score</th><th>Away</th><th>Odds H/A</th></tr>
+        <tr class="win-away"><td>2026-04-19</td><td>Parramatta Eels</td><td>38-20</td><td>Canterbury Bulldogs</td><td>4.20/1.23</td></tr><tr class="win-home"><td>2025-06-09</td><td>Canterbury Bulldogs</td><td>30-12</td><td>Parramatta Eels</td><td>-/-</td></tr><tr class="win-home"><td>2025-03-23</td><td>Parramatta Eels</td><td>8-16</td><td>Canterbury Bulldogs</td><td>-/-</td></tr><tr class="win-home"><td>2024-06-10</td><td>Canterbury Bulldogs</td><td>22-18</td><td>Parramatta Eels</td><td>-/-</td></tr><tr class="win-away"><td>2024-03-09</td><td>Parramatta Eels</td><td>26-8</td><td>Canterbury Bulldogs</td><td>1.38/3.10</td></tr>
+      </table>
+      <div class="sub-title">ROI Analysis</div>
+      <div class="stat-line">$1 on <b>Canterbury Bulldogs</b> every home game vs Parramatta Eels: 5W/12G = <b class="roi-pos">+1.8% ROI</b></div>
+      <div class="stat-line">$1 on <b>Parramatta Eels</b> every away game vs Canterbury Bulldogs: 7W/12G = <b class="roi-pos">+18.9% ROI</b></div>
+      <div class="stat-line">Canterbury Bulldogs at Accor Stadium (all opponents): 10W/22G = <b class="roi-pos">+58.4% ROI</b></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Line / ATS</div>
+      <div class="rec">No line data available</div>
+      
+      <div class="sub-title">Main Line</div>
+      <div class="odds-row">
+        <span class="odds-chip">Canterbury Bulldogs +0: <b>$1.90</b> (sportsbet)</span>
+        <span class="odds-chip">Parramatta Eels +0: <b>$1.90</b> (sportsbet)</span>
+      </div>
+      <div class="sub-title">2026 Season ATS</div>
+      <table class="stats-tbl"><tr><th></th><th>Canterbury Bulldogs</th><th>Parramatta Eels</th></tr>
+        <tr><td>Cover%</td><td>25% (3-9)</td><td>42% (5-7)</td></tr>
+      </table>
+      <div class="sub-title">Matchup ATS History (22 games with line data)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Line</th><th>Result</th></tr>
+        <tr><td>2026-04-19</td><td>38-20</td><td>-12.5</td><td>Eels covered</td></tr><tr><td>2024-03-09</td><td>26-8</td><td>+8.5</td><td>Eels covered</td></tr><tr><td>2023-06-12</td><td>12-34</td><td>+6.5</td><td>Eels covered</td></tr><tr><td>2023-04-16</td><td>30-4</td><td>+10.5</td><td>Eels covered</td></tr><tr><td>2022-08-20</td><td>42-6</td><td>+10.5</td><td>Eels covered</td></tr><tr><td>2022-06-13</td><td>34-4</td><td>+18.5</td><td>Bulldogs covered</td></tr><tr><td>2021-06-20</td><td>36-10</td><td>+20.5</td><td>Eels covered</td></tr><tr><td>2021-05-01</td><td>10-32</td><td>+20.5</td><td>Eels covered</td></tr><tr><td>2020-08-02</td><td>16-18</td><td>+16.5</td><td>Bulldogs covered</td></tr><tr><td>2020-03-12</td><td>8-2</td><td>+11.5</td><td>Bulldogs covered</td></tr><tr><td>2019-08-22</td><td>6-12</td><td>+7.5</td><td>Bulldogs covered</td></tr><tr><td>2019-03-24</td><td>16-36</td><td>+2.0</td><td>Eels covered</td></tr><tr><td>2018-07-19</td><td>14-8</td><td>+3.5</td><td>Eels covered</td></tr><tr><td>2018-05-11</td><td>20-12</td><td>+1.5</td><td>Bulldogs covered</td></tr><tr><td>2017-08-03</td><td>4-20</td><td>+5.5</td><td>Eels covered</td></tr><tr><td>2017-06-29</td><td>13-12</td><td>+7.5</td><td>Bulldogs covered</td></tr><tr><td>2016-04-29</td><td>20-12</td><td>-2.5</td><td>Eels covered</td></tr><tr><td>2016-03-18</td><td>6-20</td><td>-3.5</td><td>Eels covered</td></tr><tr><td>2015-07-17</td><td>4-28</td><td>-8.0</td><td>Bulldogs covered</td></tr><tr><td>2015-03-13</td><td>32-12</td><td>-2.5</td><td>Bulldogs covered</td></tr><tr><td>2014-08-15</td><td>16-18</td><td>+2.5</td><td>Bulldogs covered</td></tr><tr><td>2014-06-15</td><td>12-22</td><td>-5.5</td><td>Eels covered</td></tr>
+      </table>
+      <div class="sub-title">ATS ROI</div>
+      <div class="stat-line">Canterbury Bulldogs cover rate: <b>41%</b> (9/22) | Parramatta Eels: <b>59%</b> (13/22)</div>
+      <div class="stat-line">$1 on <b>Canterbury Bulldogs</b> covering H2H: 9W/22G = <b class="roi-neg">-21.9% ROI</b></div>
+      <div class="stat-line">$1 on <b>Parramatta Eels</b> covering H2H: 13W/22G = <b class="roi-pos">+12.9% ROI</b></div>
+      <div class="sub-title">2026 Season ATS ROI (all opponents)</div>
+      <div class="stat-line">$1 on <b>Canterbury Bulldogs</b> covering every game: 3W/12G = <b>25% cover rate</b></div>
+      <div class="stat-line">$1 on <b>Parramatta Eels</b> covering every game: 5W/12G = <b>42% cover rate</b></div>
+      <div class="sub-title">Line Ceiling — Canterbury Bulldogs (25 H2H games, best win: +30, worst loss: -36)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 12%</span> | <span>-15.5: 16%</span> | <span>-7.5: 24%</span> | <span>-5.5: 28%</span> | <span>-3.5: 32%</span> | <span>-1.5: 36%</span> | <span>+0.5: 36%</span> | <span>+1.5: 40%</span> | <span>+3.5: 44%</span> | <span>+7.5: 52%</span> | <span>+9.5: 56%</span> | <span>+11.5: 60%</span> | <span>+15.5: 64%</span> | <span>+19.5: 76%</span></div>
+      <div class="sub-title">Line Ceiling — Parramatta Eels (best win: +36, worst loss: -30)</div>
+      <div class="stat-line" style="line-height:1.8"><span>-19.5: 24%</span> | <span>-15.5: 36%</span> | <span>-13.5: 40%</span> | <span>-9.5: 44%</span> | <span>-7.5: 48%</span> | <span>-5.5: 56%</span> | <span>-1.5: 60%</span> | <span>-0.5: 64%</span> | <span>+0.5: 64%</span> | <span>+3.5: 68%</span> | <span>+5.5: 72%</span> | <span>+7.5: 76%</span> | <span>+9.5: 84%</span> | <span>+19.5: 88%</span></div>
+      
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Totals</div>
+      <div class="rec">DATA SUGGESTS: UNDER 48.5 (STRONG) — 0.0 over vs 3.0 under</div>
+      <div class="rec-sub">Consensus: 6 indicators scored</div>
+      <div class="sub-title">Main Total</div>
+      <div class="odds-row">
+        <span class="odds-chip">Over 48.5: <b>$1.90</b> ()</span>
+        <span class="odds-chip">Under 48.5: <b>$1.90</b> ()</span>
+      </div>
+      <div class="sub-title">Indicator Consensus vs 48.5</div>
+      <div class="tot-indicators"><span class="tot-ind tot-neutral">2026 median 50 NEUTRAL</span><span class="tot-ind tot-under">H2H median 34 UNDER (-14)</span><span class="tot-ind tot-under">H2H overs 20% UNDER</span><span class="tot-ind tot-under">Venue median 42 UNDER (-6)</span><span class="tot-ind tot-neutral">PF/PA 50 NEUTRAL</span><span class="tot-ind tot-under">2025 median 42 UNDER (-6)</span></div>
+      <div class="sub-title">2026 Season</div>
+      <table class="stats-tbl"><tr><th></th><th>Canterbury Bulldogs</th><th>Parramatta Eels</th><th>Combined</th></tr>
+        <tr><td>Mean</td><td>44.8</td><td>55.3</td><td>50.0</td></tr>
+        <tr><td>Median</td><td>46.0</td><td>53.5</td><td><b>49.8</b></td></tr>
+        <tr><td>Over%</td><td>42% (5-7)</td><td>50% (6-6)</td><td></td></tr>
+      </table>
+      <div class="sub-title">Venue: Accor Stadium (92 games)</div>
+      <div class="stat-line">Mean: <b>43.3</b> | Median: <b>42.0</b> | vs line: <b class="roi-neg">-6.5</b></div>
+      <div class="sub-title">PF/PA Expected</div>
+      <div class="stat-line">Canterbury Bulldogs PF 18.2 / PA 26.5 | Parramatta Eels PF 21.4 / PA 33.9</div>
+      <div class="stat-line">Balanced expected total: <b>50.0</b> vs line: <b class="roi-pos">+1.5</b></div>
+      <div class="sub-title">Matchup Totals History (25 games)</div>
+      <div class="stat-line">Mean: <b>34.8</b> | Median: <b>34.0</b> | Over rate: <b>20%</b> (5/25)</div>
+      <table class="mini-tbl"><tr><th>Date</th><th>Score</th><th>Actual</th><th>Line</th><th>O/U</th></tr>
+        <tr class="over"><td>2026-04-19</td><td>38-20</td><td>58</td><td>49.5</td><td>OVER</td></tr><tr class="under"><td>2025-06-09</td><td>30-12</td><td>42</td><td>44.5</td><td>UNDER</td></tr><tr class="under"><td>2025-03-23</td><td>8-16</td><td>24</td><td>49.5</td><td>UNDER</td></tr><tr class="under"><td>2024-06-10</td><td>22-18</td><td>40</td><td>46.5</td><td>UNDER</td></tr><tr class="under"><td>2024-03-09</td><td>26-8</td><td>34</td><td>40.5</td><td>UNDER</td></tr><tr class="over"><td>2023-06-12</td><td>12-34</td><td>46</td><td>43.5</td><td>OVER</td></tr><tr class="under"><td>2023-04-16</td><td>30-4</td><td>34</td><td>44.5</td><td>UNDER</td></tr><tr class="under"><td>2022-08-20</td><td>42-6</td><td>48</td><td>49.5</td><td>UNDER</td></tr><tr class="under"><td>2022-06-13</td><td>34-4</td><td>38</td><td>45.5</td><td>UNDER</td></tr><tr class="under"><td>2021-06-20</td><td>36-10</td><td>46</td><td>48.5</td><td>UNDER</td></tr><tr class="over"><td>2021-05-01</td><td>10-32</td><td>42</td><td>40.5</td><td>OVER</td></tr><tr class="under"><td>2020-08-02</td><td>16-18</td><td>34</td><td>42.5</td><td>UNDER</td></tr><tr class="under"><td>2020-03-12</td><td>8-2</td><td>10</td><td>40.5</td><td>UNDER</td></tr><tr class="under"><td>2019-08-22</td><td>6-12</td><td>18</td><td>37.5</td><td>UNDER</td></tr><tr class="over"><td>2019-03-24</td><td>16-36</td><td>52</td><td>38.5</td><td>OVER</td></tr><tr class="under"><td>2018-07-19</td><td>14-8</td><td>22</td><td>37.5</td><td>UNDER</td></tr><tr class="under"><td>2018-05-11</td><td>20-12</td><td>32</td><td>36.5</td><td>UNDER</td></tr><tr class="under"><td>2017-08-03</td><td>4-20</td><td>24</td><td>31.5</td><td>UNDER</td></tr><tr class="under"><td>2017-06-29</td><td>13-12</td><td>25</td><td>36.0</td><td>UNDER</td></tr><tr class="under"><td>2016-04-29</td><td>20-12</td><td>32</td><td>36.0</td><td>UNDER</td></tr><tr class="under"><td>2016-03-18</td><td>6-20</td><td>26</td><td>38.0</td><td>UNDER</td></tr><tr class="under"><td>2015-07-17</td><td>4-28</td><td>32</td><td>40.0</td><td>UNDER</td></tr><tr class="over"><td>2015-03-13</td><td>32-12</td><td>44</td><td>39.5</td><td>OVER</td></tr><tr class="under"><td>2014-08-15</td><td>16-18</td><td>34</td><td>41.5</td><td>UNDER</td></tr><tr class="under"><td>2014-06-15</td><td>12-22</td><td>34</td><td>40.0</td><td>UNDER</td></tr>
+      </table>
+      <div class="sub-title">Totals ROI (this matchup)</div>
+      <div class="stat-line">$1 on <b>Over</b> every H2H game: 5W/25G = <b class="roi-neg">-61.8% ROI</b></div>
+      <div class="stat-line">$1 on <b>Under</b> every H2H game: 20W/25G = <b class="roi-pos">+52.8% ROI</b></div>
+      <div class="sub-title">Ceiling Confidence — Under (25 H2H games, max: 58)</div>
+      <div class="stat-line" style="line-height:1.8"><span>U25.5: 24%</span> | <span>U30.5: 28%</span> | <span>U35.5: 60%</span> | <span>U40.5: 68%</span> | <span>U45.5: 80%</span> | <span class="roi-pos" title="Fair: $1.09">U48.5: 92% <b>$1.90</b></span> | <span>U55.5: 96%</span> | <span>U60.5: 100%</span></div>
+      <div class="sub-title">Ceiling Confidence — Over (min: 10)</div>
+      <div class="stat-line" style="line-height:1.8"><span>O55.5: 4%</span> | <span>O50.5: 8%</span> | <span class="" title="Fair: $12.50">O48.5: 8% <b>$1.90</b></span> | <span>O45.5: 20%</span> | <span>O40.5: 32%</span> | <span>O35.5: 40%</span> | <span>O30.5: 72%</span> | <span>O25.5: 76%</span></div>
+      
+    </div>
+        
+    <div class="bubble">
+      <div class="bubble-title">Team Totals</div>
+      
+      <div class="sub-title">Canterbury Bulldogs (predicted: 20.7pts)</div>
+      <div class="stat-line">2026 Home avg: <b>26.6</b> | vs Parramatta Eels: <b>14.8</b> (25G)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      <div class="sub-title">Parramatta Eels (predicted: 19.7pts)</div>
+      <div class="stat-line">2026 Away avg: <b>19.4</b> | vs Canterbury Bulldogs: <b>20.0</b> (25G)</div>
+      <div class="stat-line">vs Canterbury Bulldogs historically: <b>20.0</b> pts (25 games)</div>
+      <div class="stat-line" style="color:#6b7280">No team total odds available</div>
+      
+      
+    </div>
+      </div>
+      
+    <div class="try-scorers">
+      <div class="bubble-title">Try Scorers — Model v4.2 Predictions</div>
+      <div class="ts-picks-panel">
+      <div class="gb-cols">
+        <div class="gb-col">
+          <div class="gb-col-title">Top 5 Anytime Try Scorers</div>
+          <div class="gb-col-hdr"><span class="gb-rank">#</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          
+        </div>
+        <div class="gb-col">
+          <div class="gb-col-title">Multi &amp; FTS Standouts</div>
+          <div class="gb-col-hdr"><span class="gb-label">Mkt</span><span class="gb-player">Player</span><span class="gb-team">Team</span><span class="gb-price">Odds</span><span class="gb-prob">Prob</span><span class="gb-score">Score</span><span class="gb-edge">Edge</span></div>
+          <div class="gb-none">No standout multi/FTS edges</div>
+        </div>
+      </div>
+    </div>
+      <div class="ts-tabs" id="ts-tabs-7" style="margin-top:10px;">
+        <button class="ts-tab active" onclick="showTsTab(7,'ats')">Anytime (0)</button>
+        <button class="ts-tab" onclick="showTsTab(7,'multi')">2+ Tries (0)</button>
+        <button class="ts-tab" onclick="showTsTab(7,'fts')">First Try (0)</button>
+      </div>
+      <div class="ts-panel active" id="ts-ats-7">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-multi-7">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+      <div class="ts-panel" id="ts-fts-7">
+        <div class="stat-line" style="color:#6b7280">No data</div>
+      </div>
+    </div>
+    </div>
+<script>
+function showMatch(idx){
+  document.querySelectorAll('.mp').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('match-'+idx).classList.add('active');
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+// Auto-expand first multi card on load
+document.addEventListener('DOMContentLoaded', function(){
+  var firstCard = document.querySelector('.multi-card');
+  if(firstCard) firstCard.classList.add('expanded');
+});
+
+function toggleMultis(el){
+  el.closest('.match-multis').classList.toggle('collapsed');
+}
+
+function showTsTab(matchIdx, tab){
+  // Toggle try scorer tabs within a match
+  var container = document.getElementById('match-'+matchIdx);
+  container.querySelectorAll('.ts-tab').forEach(el=>el.classList.remove('active'));
+  container.querySelectorAll('.ts-panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('ts-'+tab+'-'+matchIdx).classList.add('active');
+  // Activate the clicked button
+  event.target.classList.add('active');
+}
+
+// HyperBot refresh
+const HB_CONFIG = {"api_key": "ded5b2ac-4a67-4216-9c2f-2e9ee30b6472", "base_url": "https://api.hyperbot.imperialwealth.com", "active_session_ids": ["66470", "67437", "41835", "45145", "41851", "41856", "41616", "41859", "41855", "71877", "52792", "53551", "41841"], "bookies": {"66470": "sportsbet", "67437": "goldbet", "41835": "neds", "45145": "noisy", "41851": "tab", "41856": "pointsbet", "41616": "okebet", "41859": "ladbrokes", "41855": "betdeluxe", "71877": "betestate", "52792": "realbookie", "53551": "betnation", "41841": "surge"}};
+
+async function refreshOdds(){
+  const btn=document.getElementById('refresh-btn');
+  const status=document.getElementById('refresh-status');
+  btn.disabled=true;
+  status.textContent='Fetching live odds from BetSniper...';
+  status.style.color='#f59e0b';
+  try{
+    const markets=['moneyline','point_spread','total_points'];
+    let totalPrices=0;
+    let matchSet=new Set();
+    for(const mkt of markets){
+      const resp=await fetch('https://api.betsniper.online/odds-by-league-market?league=5-7&market='+mkt);
+      if(!resp.ok) continue;
+      const data=await resp.json();
+      const events=data.events||{};
+      Object.values(events).forEach(ev=>{
+        const start=ev.meta?.start_date||'';
+        const cutoff=new Date(Date.now()+3*86400000).toISOString();
+        if(start>cutoff) return;
+        matchSet.add(ev.meta.home_team+' v '+ev.meta.away_team);
+        totalPrices+=(ev.odds||[]).length;
+      });
+      status.textContent='Fetched '+mkt+'... ('+totalPrices+' prices)';
+    }
+    status.style.color='#22c55e';
+    status.textContent='\u2713 '+matchSet.size+' matches, '+totalPrices+' prices fetched at '+new Date().toLocaleTimeString()+'. Run refresh_odds.py to save & rebuild.';
+    btn.disabled=false;
+  }catch(e){
+    status.style.color='#ef4444';
+    status.textContent='API blocked (CORS) — run refresh_odds.py from terminal to refresh all 17 bookies + Neds';
+    btn.disabled=false;
+  }
+}
+</script>
+</body>
+</html>
